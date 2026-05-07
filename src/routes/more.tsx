@@ -12,7 +12,8 @@ export const Route = createFileRoute("/more")({
   component: MorePage,
 });
 
-const items = [
+type Item = { to: string; label: string; icon: typeof Bot; highlight?: boolean };
+const items: Item[] = [
   { to: "/discover", label: "Discover", icon: Compass },
   { to: "/ai", label: "FUSE AI", icon: Bot, highlight: true },
   { to: "/orders", label: "Orders", icon: ListOrdered },
@@ -20,7 +21,7 @@ const items = [
   { to: "/learn", label: "Learn", icon: GraduationCap },
   { to: "/help", label: "Help & FAQ", icon: HelpCircle },
   { to: "/settings", label: "Settings", icon: Settings },
-] as const;
+];
 
 function MorePage() {
   return (
