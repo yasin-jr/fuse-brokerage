@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
+import { Logo } from "@/components/Logo";
 import { Bot, Compass, ListOrdered, Trophy, GraduationCap, HelpCircle, Settings, Share2, Pencil } from "lucide-react";
 
 export const Route = createFileRoute("/more")({
@@ -30,13 +31,10 @@ function MorePage() {
         {/* Profile card */}
         <div className="glass rounded-2xl p-5">
           <div className="flex items-center gap-4">
-            <div className="h-14 w-14 rounded-full bg-fuse-gradient" />
+            <Logo className="h-14 w-14 rounded-full" />
             <div className="flex-1">
-              <div className="flex items-center gap-2 text-sm">
-                <span className="font-semibold">@yasin</span>
-                <span className="rounded-full bg-rose-500/20 px-2 py-0.5 text-xs text-rose-300">🔴 HARD</span>
-              </div>
-              <div className="text-xs text-muted-foreground">312 PTS · Rank #4 · 142 followers</div>
+              <div className="text-sm font-semibold">@yasin</div>
+              <div className="text-xs text-muted-foreground">New trader · 0 followers</div>
             </div>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-2">

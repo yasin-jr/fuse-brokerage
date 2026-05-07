@@ -7,10 +7,10 @@ import { fuseChat } from "@/lib/chat.functions";
 type Msg = { role: "user" | "assistant"; content: string };
 
 const SUGGESTIONS = [
+  "What's moving the market today?",
+  "Explain $NVDA in simple terms",
   "What is FusionSynergy?",
-  "How does the Brokerage Simulator work?",
-  "Explain Taiwan's role in semiconductors",
-  "Why does AI need so much energy?",
+  "How do I start practice trading?",
 ];
 
 export function FuseChat() {
@@ -18,7 +18,7 @@ export function FuseChat() {
     {
       role: "assistant",
       content:
-        "Hey — I'm **FUSE AI**, FusionSynergy's intelligence engine. Ask me about markets, geopolitics, or what we're building. Where do you want to start? 📈",
+        "Hey! I'm **FUSE**, your FusionSynergy sidekick. Ask me about a stock, what's moving the market today, or how anything in the app works. Where do you want to start?",
     },
   ]);
   const [input, setInput] = useState("");
