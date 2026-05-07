@@ -3,50 +3,87 @@ import { AppShell } from "@/components/AppShell";
 import { PriceTag } from "@/components/PriceTag";
 import { Logo } from "@/components/Logo";
 import { EmptyState } from "@/components/EmptyState";
+import { TickerTape } from "@/components/TickerTape";
 import { PILLARS, PORTFOLIO, RECENT_ORDERS, DISCUSSION_PREVIEW } from "@/lib/mock-data";
-import { Sparkles, ArrowRight, MessageSquare, Receipt } from "lucide-react";
+import { Sparkles, ArrowRight, MessageSquare, Receipt, Wallet, TrendingUp } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "FusionSynergy — Practice trading, powered by AI" },
-      { name: "description", content: "Your FusionSynergy home: portfolio at a glance, market movers, and FUSE AI." },
+      { title: "FusionSynergy — Where Intelligence Meets Finance" },
+      { name: "description", content: "FusionSynergy: AI-powered practice trading. Track markets, learn the ropes, and chat with FUSE AI." },
     ],
   }),
   component: HomePage,
 });
 
 function HomePage() {
-  const favourites = PILLARS.slice(0, 5);
+  const hasPortfolio = PILLARS.length > 0;
   const winners = PILLARS.filter(p => p.change > 0).sort((a, b) => b.change - a.change).slice(0, 3);
-  const losers = PILLARS.filter(p => p.change < 0).sort((a, b) => a.change - b.change).slice(0, 3);
+  const losers  = PILLARS.filter(p => p.change < 0).sort((a, b) => a.change - b.change).slice(0, 3);
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-3xl px-4 py-6 space-y-6">
-        {/* Top bar with logo */}
-        <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <Logo className="h-9 w-9 rounded-xl" />
-            <span className="text-sm font-semibold tracking-tight">FusionSynergy</span>
-          </Link>
-          <Link to="/more" className="text-xs text-muted-foreground hover:text-foreground">
-            @yasin
-          </Link>
-        </div>
+      {/* Top bar with logo */}
+      <div className="mx-auto flex max-w-3xl items-center justify-between px-4 pt-5">
+        <Link to="/" className="flex items-center gap-2">
+          <Logo className="h-9 w-9 rounded-xl" />
+          <span className="text-sm font-semibold tracking-tight">
+            <span className="text-foreground">Fusion</span>
+            <span className="text-fuse-cyan">Synergy</span>
+          </span>
+        </Link>
+        <Link to="/more" className="text-xs text-muted-foreground hover:text-foreground">
+          Account
+        </Link>
+      </div>
 
-        {/* Greeting + portfolio */}
-        <header>
-          <p className="text-sm text-muted-foreground">Good to see you back 👋</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">
-            ${PORTFOLIO.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-          </h1>
-          <div className="mt-1 flex items-center gap-3 text-sm">
-            <span className="text-emerald-400 font-medium">+${PORTFOLIO.todayPnL.toFixed(2)}</span>
-            <PriceTag change={PORTFOLIO.todayPnLPct} />
-            <span className="text-muted-foreground text-xs">today</span>
-          </div>
-        </header>
+      {/* Live ticker tape */}
+      <div className="mt-4">
+        <TickerTape />
+      </div>
+
+      <div className="mx-auto max-w-3xl px-4 py-6 space-y-6">
+        {/* Hero / portfolio */}
+        {hasPortfolio ? (
+          <header>
+            <p className="text-sm text-muted-foreground">Total portfolio</p>
+            <h1 className="mt-1 text-3xl font-semibold tracking-tight">
+              ${PORTFOLIO.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            </h1>
+            <div className="mt-1 flex items-center gap-3 text-sm">
+              <span className="text-emerald-400 font-medium">+${PORTFOLIO.todayPnL.toFixed(2)}</span>
+              <PriceTag change={PORTFOLIO.todayPnLPct} />
+              <span className="text-muted-foreground text-xs">today</span>
+            </div>
+          </header>
+        ) : (
+          <header className="rounded-2xl border border-border/60 bg-card/40 p-6 text-center">
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-fuse-cyan">
+              Powered by AI Agents
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight">
+              Where <span className="text-fuse-gradient">Intelligence</span> Meets Finance
+            </h1>
+            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+              "The future of fintech starts with one decision."
+            </p>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+              <Link
+                to="/invest"
+                className="rounded-full bg-fuse-gradient px-5 py-2 text-xs font-semibold text-primary-foreground shadow-glow"
+              >
+                Start practicing
+              </Link>
+              <Link
+                to="/ai"
+                className="rounded-full border border-border bg-secondary/50 px-5 py-2 text-xs font-semibold text-foreground hover:border-fuse-cyan/60"
+              >
+                Ask FUSE AI
+              </Link>
+            </div>
+          </header>
+        )}
 
         {/* FUSE AI billboard */}
         <Link
@@ -55,7 +92,7 @@ function HomePage() {
         >
           <div className="flex items-center justify-between rounded-2xl bg-card p-5">
             <div>
-              <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-fuse-cyan">
+              <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-fuse-cyan">
                 <Sparkles className="h-3.5 w-3.5" /> Ask FUSE AI
               </div>
               <p className="mt-2 max-w-xs text-sm text-foreground">
@@ -68,42 +105,44 @@ function HomePage() {
           </div>
         </Link>
 
-        {/* Watchlist */}
-        <Section title="Watchlist">
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
-            {favourites.map((p) => (
-              <div key={p.ticker} className="glass min-w-[140px] rounded-xl p-3">
-                <div className="text-sm font-semibold">{p.ticker}</div>
-                <div className="mt-1 text-xs text-muted-foreground">${p.price.toFixed(2)}</div>
-                <div className="mt-2"><PriceTag change={p.change} /></div>
+        {/* Watchlist / movers */}
+        {hasPortfolio ? (
+          <Section title="Today's movers">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="glass rounded-xl p-3">
+                <div className="text-xs text-muted-foreground mb-2">Up</div>
+                {winners.map(p => (
+                  <div key={p.ticker} className="flex justify-between text-sm py-0.5">
+                    <span>{p.ticker}</span><PriceTag change={p.change} />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </Section>
-
-        {/* Movers */}
-        <Section title="Today's movers">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="glass rounded-xl p-3">
-              <div className="text-xs text-muted-foreground mb-2">Up</div>
-              {winners.map(p => (
-                <div key={p.ticker} className="flex justify-between text-sm py-0.5">
-                  <span>{p.ticker}</span><PriceTag change={p.change} />
-                </div>
-              ))}
+              <div className="glass rounded-xl p-3">
+                <div className="text-xs text-muted-foreground mb-2">Down</div>
+                {losers.map(p => (
+                  <div key={p.ticker} className="flex justify-between text-sm py-0.5">
+                    <span>{p.ticker}</span><PriceTag change={p.change} />
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="glass rounded-xl p-3">
-              <div className="text-xs text-muted-foreground mb-2">Down</div>
-              {losers.map(p => (
-                <div key={p.ticker} className="flex justify-between text-sm py-0.5">
-                  <span>{p.ticker}</span><PriceTag change={p.change} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </Section>
+          </Section>
+        ) : (
+          <Section title="Watchlist">
+            <EmptyState
+              icon={<TrendingUp className="h-6 w-6 text-muted-foreground" />}
+              title="Build your watchlist"
+              description="Search any stock and add it here to track price moves at a glance."
+              action={
+                <Link to="/invest" className="rounded-full bg-fuse-gradient px-4 py-1.5 text-xs font-semibold text-primary-foreground">
+                  Browse stocks
+                </Link>
+              }
+            />
+          </Section>
+        )}
 
-        {/* Recent activity */}
+        {/* Activity */}
         <Section title="Your activity" link={{ to: "/orders", label: "View orders" }}>
           {RECENT_ORDERS.length === 0 ? (
             <EmptyState
@@ -133,6 +172,20 @@ function HomePage() {
             </div>
           )}
         </Section>
+
+        {/* Cash card if no portfolio */}
+        {!hasPortfolio && (
+          <div className="glass flex items-center gap-3 rounded-2xl p-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-fuse-gradient">
+              <Wallet className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <div className="flex-1">
+              <div className="text-xs text-muted-foreground">Practice cash</div>
+              <div className="text-sm font-semibold">$0.00 — claim your starter balance</div>
+            </div>
+            <Link to="/settings" className="text-xs text-fuse-cyan">Setup →</Link>
+          </div>
+        )}
 
         {/* Community */}
         <Section title="Community" link={{ to: "/discussion", label: "Open" }}>
@@ -175,7 +228,7 @@ function Section({
   return (
     <section>
       <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground/90">{title}</h2>
+        <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{title}</h2>
         {link && (
           <Link to={link.to} className="text-xs text-fuse-cyan hover:underline">
             {link.label} →
