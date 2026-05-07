@@ -9,8 +9,74 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as PortfolioRouteImport } from './routes/portfolio'
+import { Route as OrdersRouteImport } from './routes/orders'
+import { Route as MoreRouteImport } from './routes/more'
+import { Route as LearnRouteImport } from './routes/learn'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as InvestRouteImport } from './routes/invest'
+import { Route as HelpRouteImport } from './routes/help'
+import { Route as DiscussionRouteImport } from './routes/discussion'
+import { Route as DiscoverRouteImport } from './routes/discover'
+import { Route as AiRouteImport } from './routes/ai'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortfolioRoute = PortfolioRouteImport.update({
+  id: '/portfolio',
+  path: '/portfolio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrdersRoute = OrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MoreRoute = MoreRouteImport.update({
+  id: '/more',
+  path: '/more',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LearnRoute = LearnRouteImport.update({
+  id: '/learn',
+  path: '/learn',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvestRoute = InvestRouteImport.update({
+  id: '/invest',
+  path: '/invest',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HelpRoute = HelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiscussionRoute = DiscussionRouteImport.update({
+  id: '/discussion',
+  path: '/discussion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiscoverRoute = DiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AiRoute = AiRouteImport.update({
+  id: '/ai',
+  path: '/ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +85,186 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/ai': typeof AiRoute
+  '/discover': typeof DiscoverRoute
+  '/discussion': typeof DiscussionRoute
+  '/help': typeof HelpRoute
+  '/invest': typeof InvestRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/learn': typeof LearnRoute
+  '/more': typeof MoreRoute
+  '/orders': typeof OrdersRoute
+  '/portfolio': typeof PortfolioRoute
+  '/settings': typeof SettingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ai': typeof AiRoute
+  '/discover': typeof DiscoverRoute
+  '/discussion': typeof DiscussionRoute
+  '/help': typeof HelpRoute
+  '/invest': typeof InvestRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/learn': typeof LearnRoute
+  '/more': typeof MoreRoute
+  '/orders': typeof OrdersRoute
+  '/portfolio': typeof PortfolioRoute
+  '/settings': typeof SettingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/ai': typeof AiRoute
+  '/discover': typeof DiscoverRoute
+  '/discussion': typeof DiscussionRoute
+  '/help': typeof HelpRoute
+  '/invest': typeof InvestRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/learn': typeof LearnRoute
+  '/more': typeof MoreRoute
+  '/orders': typeof OrdersRoute
+  '/portfolio': typeof PortfolioRoute
+  '/settings': typeof SettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/ai'
+    | '/discover'
+    | '/discussion'
+    | '/help'
+    | '/invest'
+    | '/leaderboard'
+    | '/learn'
+    | '/more'
+    | '/orders'
+    | '/portfolio'
+    | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/ai'
+    | '/discover'
+    | '/discussion'
+    | '/help'
+    | '/invest'
+    | '/leaderboard'
+    | '/learn'
+    | '/more'
+    | '/orders'
+    | '/portfolio'
+    | '/settings'
+  id:
+    | '__root__'
+    | '/'
+    | '/ai'
+    | '/discover'
+    | '/discussion'
+    | '/help'
+    | '/invest'
+    | '/leaderboard'
+    | '/learn'
+    | '/more'
+    | '/orders'
+    | '/portfolio'
+    | '/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AiRoute: typeof AiRoute
+  DiscoverRoute: typeof DiscoverRoute
+  DiscussionRoute: typeof DiscussionRoute
+  HelpRoute: typeof HelpRoute
+  InvestRoute: typeof InvestRoute
+  LeaderboardRoute: typeof LeaderboardRoute
+  LearnRoute: typeof LearnRoute
+  MoreRoute: typeof MoreRoute
+  OrdersRoute: typeof OrdersRoute
+  PortfolioRoute: typeof PortfolioRoute
+  SettingsRoute: typeof SettingsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portfolio': {
+      id: '/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof PortfolioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/orders': {
+      id: '/orders'
+      path: '/orders'
+      fullPath: '/orders'
+      preLoaderRoute: typeof OrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/more': {
+      id: '/more'
+      path: '/more'
+      fullPath: '/more'
+      preLoaderRoute: typeof MoreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/learn': {
+      id: '/learn'
+      path: '/learn'
+      fullPath: '/learn'
+      preLoaderRoute: typeof LearnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invest': {
+      id: '/invest'
+      path: '/invest'
+      fullPath: '/invest'
+      preLoaderRoute: typeof InvestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/help': {
+      id: '/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof HelpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/discussion': {
+      id: '/discussion'
+      path: '/discussion'
+      fullPath: '/discussion'
+      preLoaderRoute: typeof DiscussionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/discover': {
+      id: '/discover'
+      path: '/discover'
+      fullPath: '/discover'
+      preLoaderRoute: typeof DiscoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ai': {
+      id: '/ai'
+      path: '/ai'
+      fullPath: '/ai'
+      preLoaderRoute: typeof AiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +277,17 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AiRoute: AiRoute,
+  DiscoverRoute: DiscoverRoute,
+  DiscussionRoute: DiscussionRoute,
+  HelpRoute: HelpRoute,
+  InvestRoute: InvestRoute,
+  LeaderboardRoute: LeaderboardRoute,
+  LearnRoute: LearnRoute,
+  MoreRoute: MoreRoute,
+  OrdersRoute: OrdersRoute,
+  PortfolioRoute: PortfolioRoute,
+  SettingsRoute: SettingsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
