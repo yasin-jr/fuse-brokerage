@@ -1,9 +1,9 @@
-// Lightweight starter data for FusionSynergy. Replaced by live engine in later phases.
+// Starter data shapes for FusionSynergy. New accounts start clean — the live engine fills these.
 
 export type Pillar = {
   ticker: string;
   name: string;
-  sector: "AI & Tech" | "Energy" | "Infrastructure";
+  sector: "AI & Tech" | "Energy" | "Infrastructure" | "Healthcare" | "Fintech";
   price: number;
   change: number;
   shares: number;
@@ -11,39 +11,31 @@ export type Pillar = {
   stage: "Building" | "Growing" | "Mature" | "Trimming";
 };
 
-export const PILLARS: Pillar[] = [
-  { ticker: "UEC",  name: "Uranium Energy",   sector: "Energy",         price: 7.42,   change: 3.1,  shares: 190, weight: 14.2, stage: "Growing" },
-  { ticker: "AMD",  name: "AMD",              sector: "AI & Tech",      price: 142.50, change: 2.3,  shares: 13,  weight: 18.5, stage: "Mature" },
-  { ticker: "PATH", name: "UiPath",           sector: "AI & Tech",      price: 28.10,  change: 1.4,  shares: 65,  weight: 18.3, stage: "Growing" },
-  { ticker: "SERV", name: "Serve Robotics",   sector: "AI & Tech",      price: 12.20,  change: -0.5, shares: 130, weight: 15.9, stage: "Building" },
-  { ticker: "IONQ", name: "IonQ",             sector: "AI & Tech",      price: 31.50,  change: 0.0,  shares: 5,   weight: 1.5,  stage: "Building" },
-  { ticker: "CIFR", name: "Cipher Mining",    sector: "Infrastructure", price: 8.20,   change: -1.8, shares: 220, weight: 17.6, stage: "Mature" },
-  { ticker: "XYL",  name: "Xylem",            sector: "Infrastructure", price: 124.80, change: 4.2,  shares: 8,   weight: 9.7,  stage: "Growing" },
-];
+// New users start with no holdings.
+export const PILLARS: Pillar[] = [];
 
 export const PORTFOLIO = {
-  total: 10247.5,
-  todayPnL: 147.5,
-  todayPnLPct: 1.46,
-  totalPnL: 247.5,
-  totalPnLPct: 2.48,
-  cash: 1200,
-  capitalFloor: 1537,
-  health: 78,
-  sharpe: 1.42,
-  winRate: 68,
-  avgHoldDays: 12,
+  total: 0,
+  todayPnL: 0,
+  todayPnLPct: 0,
+  totalPnL: 0,
+  totalPnLPct: 0,
+  cash: 0,
+  capitalFloor: 0,
+  health: 100,
+  sharpe: 0,
+  winRate: 0,
+  avgHoldDays: 0,
 };
 
-// Casual safety rules (the inner architecture calls these "the 4 bones")
+// Casual safety rules — always shown so users know the guardrails.
 export const SAFETY_RULES = [
-  { id: 1, label: "Keep at least 15% in cash",     ok: true, value: "16.4% cash" },
-  { id: 2, label: "Don't lose more than 5% a day", ok: true, value: "+1.46% today" },
-  { id: 3, label: "No single stock above 20%",     ok: true, value: "Top: 18.5%" },
-  { id: 4, label: "No sector above 50%",           ok: true, value: "Top sector: 38.8%" },
+  { id: 1, label: "Keep at least 15% in cash",     ok: true, value: "—" },
+  { id: 2, label: "Don't lose more than 5% a day", ok: true, value: "—" },
+  { id: 3, label: "No single stock above 20%",     ok: true, value: "—" },
+  { id: 4, label: "No sector above 50%",           ok: true, value: "—" },
 ];
 
-// Empty by default — the live engine fills these.
 export const RECENT_ORDERS: Array<{
   id: string; ts: string; action: "BUY" | "SELL"; ticker: string;
   qty: number; price: number; status: "FILLED" | "PENDING";
@@ -52,3 +44,17 @@ export const RECENT_ORDERS: Array<{
 export const DISCUSSION_PREVIEW: Array<{
   user: string; badge: string; text: string; sentiment: string; likes: number;
 }> = [];
+
+// Public ticker tape — mirrors the marketing site. Static for now; swap for live feed
+// once a market-data connector (e.g. Yahoo / Finnhub / Alpha Vantage) is wired in.
+export const TICKER_TAPE = [
+  { symbol: "BTC",     price: "67,842.30", change:  2.4 },
+  { symbol: "ETH",     price: "3,456.12",  change:  1.8 },
+  { symbol: "S&P 500", price: "5,321.41",  change:  0.8 },
+  { symbol: "NASDAQ",  price: "18,450.22", change:  0.5 },
+  { symbol: "GOLD",    price: "2,348.60",  change:  1.2 },
+  { symbol: "NVDA",    price: "924.79",    change: -0.3 },
+  { symbol: "AAPL",    price: "189.84",    change:  0.5 },
+  { symbol: "MSFT",    price: "415.30",    change: -0.7 },
+  { symbol: "TSLA",    price: "177.40",    change:  3.1 },
+];

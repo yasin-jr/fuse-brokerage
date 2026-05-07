@@ -1,7 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { PriceTag } from "@/components/PriceTag";
+import { EmptyState } from "@/components/EmptyState";
 import { PILLARS, PORTFOLIO, SAFETY_RULES } from "@/lib/mock-data";
+import { PieChart } from "lucide-react";
 
 export const Route = createFileRoute("/portfolio")({
   head: () => ({
@@ -14,6 +16,7 @@ export const Route = createFileRoute("/portfolio")({
 });
 
 function PortfolioPage() {
+  const hasHoldings = PILLARS.length > 0;
   const sectorMap = PILLARS.reduce<Record<string, number>>((acc, p) => {
     acc[p.sector] = (acc[p.sector] || 0) + p.weight;
     return acc;
@@ -28,48 +31,65 @@ function PortfolioPage() {
             ${PORTFOLIO.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
           </h1>
           <div className="mt-1 flex gap-3 text-sm">
-            <span className="text-emerald-400 font-medium">+${PORTFOLIO.totalPnL.toFixed(2)}</span>
+            <span className={PORTFOLIO.totalPnL >= 0 ? "text-emerald-400 font-medium" : "text-rose-400 font-medium"}>
+              {PORTFOLIO.totalPnL >= 0 ? "+" : ""}${PORTFOLIO.totalPnL.toFixed(2)}
+            </span>
             <PriceTag change={PORTFOLIO.totalPnLPct} />
             <span className="text-muted-foreground text-xs">all-time</span>
           </div>
         </header>
 
         <section>
-          <h2 className="mb-2 text-sm font-semibold">Holdings</h2>
-          <div className="glass rounded-xl divide-y divide-border/50">
-            {PILLARS.map((p) => (
-              <div key={p.ticker} className="flex items-center justify-between p-3 text-sm">
-                <div>
-                  <div className="font-semibold">{p.ticker}</div>
-                  <div className="text-xs text-muted-foreground">{p.name} · {p.sector}</div>
+          <h2 className="mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Holdings</h2>
+          {hasHoldings ? (
+            <div className="glass rounded-xl divide-y divide-border/50">
+              {PILLARS.map((p) => (
+                <div key={p.ticker} className="flex items-center justify-between p-3 text-sm">
+                  <div>
+                    <div className="font-semibold">{p.ticker}</div>
+                    <div className="text-xs text-muted-foreground">{p.name} · {p.sector}</div>
+                  </div>
+                  <div className="text-right">
+                    <div>{p.weight.toFixed(1)}%</div>
+                    <PriceTag change={p.change} />
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div>{p.weight.toFixed(1)}%</div>
-                  <PriceTag change={p.change} />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={<PieChart className="h-6 w-6 text-muted-foreground" />}
+              title="No positions yet"
+              description="Once you start practice trading, your holdings and sector mix will live here."
+              action={
+                <Link to="/invest" className="rounded-full bg-fuse-gradient px-4 py-1.5 text-xs font-semibold text-primary-foreground">
+                  Find a stock
+                </Link>
+              }
+            />
+          )}
         </section>
 
-        <section>
-          <h2 className="mb-2 text-sm font-semibold">Sector mix</h2>
-          <div className="space-y-2">
-            {Object.entries(sectorMap).map(([s, w]) => (
-              <div key={s}>
-                <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                  <span>{s}</span><span>{w.toFixed(1)}%</span>
+        {hasHoldings && (
+          <section>
+            <h2 className="mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Sector mix</h2>
+            <div className="space-y-2">
+              {Object.entries(sectorMap).map(([s, w]) => (
+                <div key={s}>
+                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                    <span>{s}</span><span>{w.toFixed(1)}%</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                    <div className="h-full bg-fuse-gradient" style={{ width: `${w}%` }} />
+                  </div>
                 </div>
-                <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                  <div className="h-full bg-fuse-gradient" style={{ width: `${w}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section>
-          <h2 className="mb-2 text-sm font-semibold">Safety check</h2>
+          <h2 className="mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Safety check</h2>
           <p className="mb-2 text-xs text-muted-foreground">
             Four simple rules keep your account healthy. We'll warn you if any of them slip.
           </p>
@@ -86,28 +106,7 @@ function PortfolioPage() {
             ))}
           </div>
         </section>
-
-        <section>
-          <h2 className="mb-2 text-sm font-semibold">Stats</h2>
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <Stat label="Health" value={`${PORTFOLIO.health}/100`} />
-            <Stat label="Sharpe" value={PORTFOLIO.sharpe.toFixed(2)} />
-            <Stat label="Win rate" value={`${PORTFOLIO.winRate}%`} />
-            <Stat label="Avg hold" value={`${PORTFOLIO.avgHoldDays}d`} />
-            <Stat label="Cash" value={`$${PORTFOLIO.cash}`} />
-            <Stat label="Floor" value={`$${PORTFOLIO.capitalFloor}`} />
-          </div>
-        </section>
       </div>
     </AppShell>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="glass rounded-xl p-3">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="mt-1 text-sm font-semibold">{value}</div>
-    </div>
   );
 }

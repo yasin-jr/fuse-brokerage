@@ -33,8 +33,8 @@ function MorePage() {
           <div className="flex items-center gap-4">
             <Logo className="h-14 w-14 rounded-full" />
             <div className="flex-1">
-              <div className="text-sm font-semibold">@yasin</div>
-              <div className="text-xs text-muted-foreground">New trader · 0 followers</div>
+              <div className="text-sm font-semibold">Welcome 👋</div>
+              <div className="text-xs text-muted-foreground">Set up your profile to get started</div>
             </div>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-2">
