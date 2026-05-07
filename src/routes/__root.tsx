@@ -72,14 +72,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "FUSE" },
+      { name: "description", content: "Fusion Intel Hub is an AI-powered fintech platform democratizing financial intelligence for all users." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "FUSE" },
+      { property: "og:description", content: "Fusion Intel Hub is an AI-powered fintech platform democratizing financial intelligence for all users." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "FUSE" },
+      { name: "twitter:description", content: "Fusion Intel Hub is an AI-powered fintech platform democratizing financial intelligence for all users." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/16792947-83e9-4d24-8e6d-99c5d67c510b" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/16792947-83e9-4d24-8e6d-99c5d67c510b" },
     ],
     links: [
       {
