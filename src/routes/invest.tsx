@@ -71,20 +71,26 @@ function InvestPage() {
 
         <section>
           <h2 className="mb-2 text-sm font-semibold">🔥 Trending Stocks</h2>
-          <div className="glass rounded-xl divide-y divide-border/50">
-            {PILLARS.map((p) => (
-              <div key={p.ticker} className="flex items-center justify-between p-3 text-sm">
-                <div>
-                  <div className="font-semibold">{p.ticker}</div>
-                  <div className="text-xs text-muted-foreground">{p.name}</div>
+          {PILLARS.length === 0 ? (
+            <div className="glass rounded-xl p-4 text-center text-xs text-muted-foreground">
+              Live prices light up here once a market-data feed is connected.
+            </div>
+          ) : (
+            <div className="glass rounded-xl divide-y divide-border/50">
+              {PILLARS.map((p) => (
+                <div key={p.ticker} className="flex items-center justify-between p-3 text-sm">
+                  <div>
+                    <div className="font-semibold">{p.ticker}</div>
+                    <div className="text-xs text-muted-foreground">{p.name}</div>
+                  </div>
+                  <div className="text-right">
+                    <div>${p.price.toFixed(2)}</div>
+                    <PriceTag change={p.change} />
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div>${p.price.toFixed(2)}</div>
-                  <PriceTag change={p.change} />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </AppShell>
