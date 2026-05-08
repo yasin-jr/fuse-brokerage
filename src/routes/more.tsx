@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
+import { EditProfileDialog } from "@/components/EditProfileDialog";
+import { useProfile, useFollows } from "@/lib/profile-store";
 import { Bot, Compass, ListOrdered, Trophy, GraduationCap, HelpCircle, Settings, Share2, Pencil } from "lucide-react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/more")({
   head: () => ({
@@ -25,23 +28,55 @@ const items: Item[] = [
 ];
 
 function MorePage() {
+  const [editing, setEditing] = useState(false);
+  const profile = useProfile();
+  const follows = useFollows();
+
+  const share = async () => {
+    const url = typeof window !== "undefined" ? window.location.origin : "https://fuse-brokerage.lovable.app";
+    const data = {
+      title: profile.username ? `${profile.username} on FusionSynergy` : "FusionSynergy",
+      text: profile.bio || "Check out my FusionSynergy profile.",
+      url,
+    };
+    try {
+      if (navigator.share) await navigator.share(data);
+      else {
+        await navigator.clipboard.writeText(url);
+        alert("Profile link copied to clipboard");
+      }
+    } catch {}
+  };
+
   return (
     <AppShell>
       <div className="mx-auto max-w-3xl px-4 py-6 space-y-6">
         {/* Profile card */}
         <div className="glass rounded-2xl p-5">
           <div className="flex items-center gap-4">
-            <Logo className="h-14 w-14 rounded-full" />
+            {profile.avatar ? (
+              <img src={profile.avatar} alt="" className="h-14 w-14 rounded-full object-cover border border-border" />
+            ) : (
+              <Logo className="h-14 w-14 rounded-full" />
+            )}
             <div className="flex-1">
-              <div className="text-sm font-semibold">Welcome 👋</div>
-              <div className="text-xs text-muted-foreground">Set up your profile to get started</div>
+              <div className="text-sm font-semibold">
+                {profile.username ? `@${profile.username}` : "Welcome 👋"}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {profile.bio || "Set up your profile to get started"}
+              </div>
+              <div className="mt-1 flex gap-3 text-[11px] text-muted-foreground">
+                <span><b className="text-foreground">{follows.followers.length}</b> followers</span>
+                <span><b className="text-foreground">{follows.following.length}</b> following</span>
+              </div>
             </div>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-2">
-            <button className="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-secondary/50 py-2 text-xs">
+            <button onClick={() => setEditing(true)} className="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-secondary/50 py-2 text-xs hover:bg-secondary">
               <Pencil className="h-3.5 w-3.5" /> Edit profile
             </button>
-            <button className="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-secondary/50 py-2 text-xs">
+            <button onClick={share} className="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-secondary/50 py-2 text-xs hover:bg-secondary">
               <Share2 className="h-3.5 w-3.5" /> Share profile
             </button>
           </div>
@@ -63,6 +98,8 @@ function MorePage() {
           ))}
         </nav>
       </div>
+
+      <EditProfileDialog open={editing} onClose={() => setEditing(false)} />
     </AppShell>
   );
 }

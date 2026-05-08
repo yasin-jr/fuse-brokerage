@@ -1,59 +1,71 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
+import { BackBar } from "@/components/BackBar";
+import { useFollows, saveFollows } from "@/lib/profile-store";
+import { useState } from "react";
 
 export const Route = createFileRoute("/leaderboard")({
   head: () => ({ meta: [{ title: "Leaderboard — FusionSynergy" }] }),
   component: LeaderboardPage,
 });
 
-const ROWS = [
-  { rank: 1, user: "quantumKing",  diff: "🔴 HARD",       pts: 842, ret: "+842%" },
-  { rank: 2, user: "alphaWolf",    diff: "🟠 MED-S",      pts: 612, ret: "+204%" },
-  { rank: 3, user: "diamondHands", diff: "🟡 MED-L",      pts: 498, ret: "+166%" },
-  { rank: 4, user: "yasin (you)",  diff: "🔴 HARD",       pts: 312, ret: "+312%", me: true },
-  { rank: 5, user: "valueHunter",  diff: "🟢 EASY",       pts: 287, ret: "+28.7%" },
-];
+const TABS = ["Worldwide", "Followers", "Following"] as const;
+type Tab = typeof TABS[number];
 
 function LeaderboardPage() {
+  const [tab, setTab] = useState<Tab>("Worldwide");
+  const follows = useFollows();
+
+  const counts = {
+    Worldwide: 0,
+    Followers: follows.followers.length,
+    Following: follows.following.length,
+  };
+
+  const toggleFollow = () => {
+    // demo toggle for the only existing user
+    const isFollowing = follows.following.includes("you");
+    saveFollows({
+      ...follows,
+      following: isFollowing ? follows.following.filter((u) => u !== "you") : [...follows.following, "you"],
+    });
+  };
+
   return (
     <AppShell>
+      <BackBar />
       <div className="mx-auto max-w-3xl px-4 py-6 space-y-4">
         <h1 className="text-2xl font-semibold">🏆 Leaderboard</h1>
 
         <div className="flex gap-2 overflow-x-auto pb-1 text-xs">
-          {["🌍 Worldwide", "Followers", "Following"].map((f, i) => (
-            <button key={f} className={`whitespace-nowrap rounded-full px-3 py-1.5 ${i === 0 ? "bg-fuse-gradient text-background font-semibold" : "border border-border bg-secondary/40 text-muted-foreground"}`}>
-              {f}
+          {TABS.map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`whitespace-nowrap rounded-full px-3 py-1.5 ${
+                t === tab
+                  ? "bg-fuse-gradient text-primary-foreground font-semibold"
+                  : "border border-border bg-secondary/40 text-muted-foreground"
+              }`}
+            >
+              {t} {t !== "Worldwide" && `(${counts[t]})`}
             </button>
           ))}
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-1 text-xs">
-          {["All", "🟢 Easy", "🟡 Med-L", "🟠 Med-S", "🔴 Hard"].map((f) => (
-            <button key={f} className="whitespace-nowrap rounded-full border border-border bg-secondary/40 px-3 py-1.5 text-muted-foreground">{f}</button>
-          ))}
+
+        <div className="flex gap-2">
+          <button onClick={toggleFollow} className="rounded-full border border-border bg-secondary/50 px-3 py-1.5 text-xs">
+            {follows.following.includes("you") ? "Unfollow demo" : "Follow demo"}
+          </button>
         </div>
 
-        <div className="glass rounded-xl divide-y divide-border/50">
-          {ROWS.map((r) => (
-            <div key={r.rank} className={`flex items-center justify-between p-3 text-sm ${r.me ? "bg-fuse-cyan/5" : ""}`}>
-              <div className="flex items-center gap-3">
-                <span className="w-6 text-center font-semibold text-fuse-cyan">#{r.rank}</span>
-                <div>
-                  <div className="font-semibold">@{r.user}</div>
-                  <div className="text-xs text-muted-foreground">{r.diff}</div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="font-semibold">{r.pts} PTS</div>
-                <div className="text-xs text-emerald-400">{r.ret}</div>
-              </div>
-            </div>
-          ))}
+        <div className="glass rounded-xl p-8 text-center">
+          <div className="text-4xl mb-2">🌱</div>
+          <h2 className="text-base font-semibold">No rankings yet</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            The leaderboard fills up once people start trading. Be one of the first.
+          </p>
         </div>
-
-        <p className="text-center text-xs text-muted-foreground">
-          Updated every 30 minutes — matches the FUSE cycle.
-        </p>
       </div>
     </AppShell>
   );
