@@ -4,7 +4,9 @@ import { PriceTag } from "@/components/PriceTag";
 import { Logo } from "@/components/Logo";
 import { EmptyState } from "@/components/EmptyState";
 import { TickerTape } from "@/components/TickerTape";
-import { PILLARS, PORTFOLIO, RECENT_ORDERS, DISCUSSION_PREVIEW } from "@/lib/mock-data";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { PILLARS, PORTFOLIO, RECENT_ORDERS } from "@/lib/mock-data";
+import { usePosts } from "@/lib/profile-store";
 import { Sparkles, ArrowRight, MessageSquare, Receipt, Wallet, TrendingUp } from "lucide-react";
 
 export const Route = createFileRoute("/")({
