@@ -191,7 +191,7 @@ function HomePage() {
 
         {/* Community */}
         <Section title="Community" link={{ to: "/discussion", label: "Open" }}>
-          {DISCUSSION_PREVIEW.length === 0 ? (
+          {previewPosts.length === 0 ? (
             <EmptyState
               icon={<MessageSquare className="h-6 w-6 text-muted-foreground" />}
               title="The room is quiet"
@@ -204,8 +204,8 @@ function HomePage() {
             />
           ) : (
             <div className="glass rounded-xl divide-y divide-border/50">
-              {DISCUSSION_PREVIEW.map((d, i) => (
-                <div key={i} className="p-3 text-sm">
+              {previewPosts.map((d) => (
+                <div key={d.id} className="p-3 text-sm">
                   <div className="text-xs text-muted-foreground">@{d.user}</div>
                   <p className="mt-1">{d.text}</p>
                 </div>
