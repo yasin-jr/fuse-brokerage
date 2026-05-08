@@ -1,17 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
+import { BackBar } from "@/components/BackBar";
 
 const faqs = [
-  { q: "What are the 4 Bones?",            a: "Absolute risk rules: ≥15% cash, ≤5% daily loss, ≤20% per pillar, ≤50% per sector." },
-  { q: "How does difficulty work?",        a: "Lower starting capital = higher points multiplier. Easy ($1M) → Hard ($1K, ×10 PTS)." },
-  { q: "Live vs paper trading?",           a: "V1 is virtual paper trading. Real-money brokerage arrives in V2." },
-  { q: "What is FUSE Intelligence?",       a: "AI overlay that runs Scout + Orchestrator on any stock and can route a trade." },
+  { q: "How does difficulty work?",     a: "Lower starting cash = bigger points multiplier. Pick what feels right and switch later." },
+  { q: "Live vs paper trading?",        a: "Right now everything is practice (paper) trading. Real-money trading lands in a future update." },
+  { q: "What is FUSE AI?",              a: "Your in-app sidekick — ask it about a stock, an idea, or what's moving today." },
 ];
 
 export const Route = createFileRoute("/help")({
   head: () => ({ meta: [{ title: "Help & FAQ — FusionSynergy" }] }),
   component: () => (
     <AppShell>
+      <BackBar />
       <div className="mx-auto max-w-3xl px-4 py-6 space-y-4">
         <h1 className="text-2xl font-semibold">❓ Help Center</h1>
         <input placeholder="Search help…" className="w-full rounded-xl border border-border bg-secondary/40 px-3 py-2.5 text-sm outline-none" />

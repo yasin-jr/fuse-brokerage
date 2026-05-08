@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
+import { BackBar } from "@/components/BackBar";
 import { EmptyState } from "@/components/EmptyState";
 import { RECENT_ORDERS } from "@/lib/mock-data";
 import { Receipt } from "lucide-react";
@@ -17,6 +18,7 @@ function OrdersPage() {
 
   return (
     <AppShell>
+      <BackBar />
       <div className="mx-auto max-w-3xl px-4 py-6 space-y-6">
         <h1 className="text-2xl font-semibold">Orders</h1>
 

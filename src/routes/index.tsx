@@ -4,7 +4,9 @@ import { PriceTag } from "@/components/PriceTag";
 import { Logo } from "@/components/Logo";
 import { EmptyState } from "@/components/EmptyState";
 import { TickerTape } from "@/components/TickerTape";
-import { PILLARS, PORTFOLIO, RECENT_ORDERS, DISCUSSION_PREVIEW } from "@/lib/mock-data";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { PILLARS, PORTFOLIO, RECENT_ORDERS } from "@/lib/mock-data";
+import { usePosts } from "@/lib/profile-store";
 import { Sparkles, ArrowRight, MessageSquare, Receipt, Wallet, TrendingUp } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -21,6 +23,8 @@ function HomePage() {
   const hasPortfolio = PILLARS.length > 0;
   const winners = PILLARS.filter(p => p.change > 0).sort((a, b) => b.change - a.change).slice(0, 3);
   const losers  = PILLARS.filter(p => p.change < 0).sort((a, b) => a.change - b.change).slice(0, 3);
+  const posts = usePosts();
+  const previewPosts = posts.slice(0, 3);
 
   return (
     <AppShell>
@@ -28,14 +32,17 @@ function HomePage() {
       <div className="mx-auto flex max-w-3xl items-center justify-between px-4 pt-5">
         <Link to="/" className="flex items-center gap-2">
           <Logo className="h-9 w-9 rounded-xl" />
-          <span className="text-sm font-semibold tracking-tight">
-            <span className="text-foreground">Fusion</span>
-            <span className="text-fuse-cyan">Synergy</span>
+          <span className="text-base tracking-tight">
+            <span className="brand-fusion">Fusion</span>
+            <span className="brand-synergy">Synergy</span>
           </span>
         </Link>
-        <Link to="/more" className="text-xs text-muted-foreground hover:text-foreground">
-          Account
-        </Link>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Link to="/more" className="text-xs text-muted-foreground hover:text-foreground">
+            Account
+          </Link>
+        </div>
       </div>
 
       {/* Live ticker tape */}
@@ -189,7 +196,7 @@ function HomePage() {
 
         {/* Community */}
         <Section title="Community" link={{ to: "/discussion", label: "Open" }}>
-          {DISCUSSION_PREVIEW.length === 0 ? (
+          {previewPosts.length === 0 ? (
             <EmptyState
               icon={<MessageSquare className="h-6 w-6 text-muted-foreground" />}
               title="The room is quiet"
@@ -202,8 +209,8 @@ function HomePage() {
             />
           ) : (
             <div className="glass rounded-xl divide-y divide-border/50">
-              {DISCUSSION_PREVIEW.map((d, i) => (
-                <div key={i} className="p-3 text-sm">
+              {previewPosts.map((d) => (
+                <div key={d.id} className="p-3 text-sm">
                   <div className="text-xs text-muted-foreground">@{d.user}</div>
                   <p className="mt-1">{d.text}</p>
                 </div>

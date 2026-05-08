@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
+import { BackBar } from "@/components/BackBar";
 import { FuseChat } from "@/components/FuseChat";
 
 export const Route = createFileRoute("/ai")({
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/ai")({
 function AIPage() {
   return (
     <AppShell>
+      <BackBar />
       <div className="mx-auto max-w-3xl px-4 py-6">
         <header className="mb-4 text-center">
           <h1 className="text-3xl font-semibold"><span className="text-fuse-gradient">FUSE AI</span></h1>
