@@ -23,6 +23,8 @@ function HomePage() {
   const hasPortfolio = PILLARS.length > 0;
   const winners = PILLARS.filter(p => p.change > 0).sort((a, b) => b.change - a.change).slice(0, 3);
   const losers  = PILLARS.filter(p => p.change < 0).sort((a, b) => a.change - b.change).slice(0, 3);
+  const posts = usePosts();
+  const previewPosts = posts.slice(0, 3);
 
   return (
     <AppShell>
@@ -30,14 +32,17 @@ function HomePage() {
       <div className="mx-auto flex max-w-3xl items-center justify-between px-4 pt-5">
         <Link to="/" className="flex items-center gap-2">
           <Logo className="h-9 w-9 rounded-xl" />
-          <span className="text-sm font-semibold tracking-tight">
-            <span className="text-foreground">Fusion</span>
-            <span className="text-fuse-cyan">Synergy</span>
+          <span className="text-base tracking-tight">
+            <span className="brand-fusion">Fusion</span>
+            <span className="brand-synergy">Synergy</span>
           </span>
         </Link>
-        <Link to="/more" className="text-xs text-muted-foreground hover:text-foreground">
-          Account
-        </Link>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Link to="/more" className="text-xs text-muted-foreground hover:text-foreground">
+            Account
+          </Link>
+        </div>
       </div>
 
       {/* Live ticker tape */}
