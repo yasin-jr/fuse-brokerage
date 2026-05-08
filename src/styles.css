@@ -85,6 +85,34 @@
   }
 }
 
+/* Light theme override */
+html.light {
+  --background: oklch(0.985 0.005 220);
+  --foreground: oklch(0.18 0.02 240);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.02 240);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.02 240);
+  --primary: oklch(0.55 0.18 230);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.95 0.01 230);
+  --secondary-foreground: oklch(0.20 0.02 240);
+  --muted: oklch(0.94 0.01 230);
+  --muted-foreground: oklch(0.45 0.02 240);
+  --accent: oklch(0.92 0.02 230);
+  --accent-foreground: oklch(0.20 0.02 240);
+  --border: oklch(0.20 0.02 240 / 0.12);
+  --input: oklch(0.95 0.01 230);
+  --ring: oklch(0.55 0.18 230);
+  --fuse-cyan: oklch(0.55 0.18 220);
+  --fuse-violet: oklch(0.55 0.20 280);
+  --gradient-bg:
+    radial-gradient(ellipse at top, oklch(0.95 0.04 220) 0%, oklch(0.985 0.005 220) 70%),
+    oklch(0.985 0.005 220);
+  --shadow-glow: 0 0 50px -8px oklch(0.55 0.18 220 / 0.35);
+  --shadow-soft: 0 10px 30px -12px oklch(0 0 0 / 0.15);
+}
+
 @layer utilities {
   .bg-fuse-gradient { background-image: var(--gradient-fuse); }
   .text-fuse-gradient {
@@ -96,9 +124,21 @@
   .shadow-glow { box-shadow: var(--shadow-glow); }
   .shadow-soft { box-shadow: var(--shadow-soft); }
   .glass {
-    background-color: oklch(0.22 0.04 262 / 0.55);
+    background-color: color-mix(in oklab, var(--card) 70%, transparent);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    border: 1px solid oklch(1 0 0 / 0.07);
+    border: 1px solid color-mix(in oklab, var(--foreground) 8%, transparent);
+  }
+  .brand-fusion {
+    color: var(--foreground);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+  }
+  .brand-synergy {
+    color: var(--foreground);
+    font-weight: 600;
+    text-shadow:
+      0 0 8px color-mix(in oklab, var(--foreground) 50%, transparent),
+      0 0 18px color-mix(in oklab, var(--fuse-cyan) 35%, transparent);
   }
 }
