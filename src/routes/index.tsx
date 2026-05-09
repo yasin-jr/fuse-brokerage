@@ -7,7 +7,7 @@ import { TickerTape } from "@/components/TickerTape";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { PILLARS, PORTFOLIO, RECENT_ORDERS } from "@/lib/mock-data";
 import { usePosts } from "@/lib/profile-store";
-import { Sparkles, ArrowRight, MessageSquare, Receipt, Wallet, TrendingUp } from "lucide-react";
+import { Sparkles, ArrowRight, MessageSquare, Receipt, Wallet, TrendingUp, Settings as SettingsIcon } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -37,10 +37,14 @@ function HomePage() {
             <span className="brand-synergy">Synergy</span>
           </span>
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <ThemeToggle />
-          <Link to="/more" className="text-xs text-muted-foreground hover:text-foreground">
-            Account
+          <Link
+            to="/settings"
+            aria-label="Settings"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
+          >
+            <SettingsIcon className="h-[18px] w-[18px]" />
           </Link>
         </div>
       </div>
@@ -66,10 +70,7 @@ function HomePage() {
           </header>
         ) : (
           <header className="rounded-2xl border border-border/60 bg-card/40 p-6 text-center">
-            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-fuse-cyan">
-              Powered by AI Agents
-            </p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight">
+            <h1 className="text-3xl font-semibold tracking-tight">
               Where <span className="text-fuse-gradient">Intelligence</span> Meets Finance
             </h1>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
