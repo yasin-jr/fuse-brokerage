@@ -8,7 +8,9 @@ export type Quote = {
   prevClose: number;
 };
 
-// Display label map (Yahoo symbol -> friendly label)
+// Free-tier keys provided by the project owner. Server-only file.
+const FINNHUB_KEY = "d7l8s9pr01qm7o0avm60d7l8s9pr01qm7o0avm6g";
+
 const LABELS: Record<string, string> = {
   "BTC-USD": "BTC",
   "ETH-USD": "ETH",
@@ -22,7 +24,17 @@ const LABELS: Record<string, string> = {
   "DX=F": "DXY",
 };
 
-async function fetchOne(symbol: string): Promise<Quote | null> {
+// Map Yahoo symbols → Finnhub symbols where they differ
+const FINNHUB_SYMBOL: Record<string, string> = {
+  "BTC-USD": "BINANCE:BTCUSDT",
+  "ETH-USD": "BINANCE:ETHUSDT",
+  "SOL-USD": "BINANCE:SOLUSDT",
+  "^GSPC": "^GSPC",
+  "^IXIC": "^IXIC",
+  "^DJI": "^DJI",
+};
+
+async function fetchYahoo(symbol: string): Promise<Quote | null> {
   try {
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=1d`;
     const r = await fetch(url, {
@@ -34,17 +46,33 @@ async function fetchOne(symbol: string): Promise<Quote | null> {
     if (!meta) return null;
     const price = meta.regularMarketPrice ?? 0;
     const prev = meta.chartPreviousClose ?? meta.previousClose ?? price;
+    if (!price) return null;
     const change = prev ? ((price - prev) / prev) * 100 : 0;
-    return {
-      symbol,
-      label: LABELS[symbol] ?? symbol,
-      price,
-      change,
-      prevClose: prev,
-    };
+    return { symbol, label: LABELS[symbol] ?? symbol, price, change, prevClose: prev };
   } catch {
     return null;
   }
+}
+
+async function fetchFinnhub(symbol: string): Promise<Quote | null> {
+  try {
+    const fhSym = FINNHUB_SYMBOL[symbol] ?? symbol;
+    const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(fhSym)}&token=${FINNHUB_KEY}`;
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    const j: any = await r.json();
+    const price = Number(j?.c) || 0;
+    const prev = Number(j?.pc) || price;
+    if (!price) return null;
+    const change = prev ? ((price - prev) / prev) * 100 : 0;
+    return { symbol, label: LABELS[symbol] ?? symbol, price, change, prevClose: prev };
+  } catch {
+    return null;
+  }
+}
+
+async function fetchOne(symbol: string): Promise<Quote | null> {
+  return (await fetchYahoo(symbol)) ?? (await fetchFinnhub(symbol));
 }
 
 export const getQuotes = createServerFn({ method: "GET" })
