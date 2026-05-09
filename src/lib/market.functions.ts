@@ -82,3 +82,31 @@ export const getQuotes = createServerFn({ method: "GET" })
     const results = await Promise.all(data.symbols.map(fetchOne));
     return { quotes: results.filter((q): q is Quote => q !== null) };
   });
+
+export type Mover = { symbol: string; name: string; price: number; change: number };
+
+async function fmpList(path: string): Promise<Mover[]> {
+  try {
+    const r = await fetch(`https://financialmodelingprep.com/api/v3/${path}?apikey=${FMP_KEY}`);
+    if (!r.ok) return [];
+    const j: any = await r.json();
+    if (!Array.isArray(j)) return [];
+    return j.slice(0, 5).map((x: any) => ({
+      symbol: String(x.symbol ?? x.ticker ?? ""),
+      name: String(x.name ?? x.companyName ?? ""),
+      price: Number(x.price ?? 0),
+      change: Number(x.changesPercentage ?? x.changePercent ?? 0),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export const getMovers = createServerFn({ method: "GET" }).handler(async () => {
+  const [gainers, losers, actives] = await Promise.all([
+    fmpList("stock_market/gainers"),
+    fmpList("stock_market/losers"),
+    fmpList("stock_market/actives"),
+  ]);
+  return { gainers, losers, actives };
+});
