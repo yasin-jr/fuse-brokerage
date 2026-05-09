@@ -10,6 +10,7 @@ export type Quote = {
 
 // Free-tier keys provided by the project owner. Server-only file.
 const FINNHUB_KEY = "d7l8s9pr01qm7o0avm60d7l8s9pr01qm7o0avm6g";
+const FMP_KEY = "YMycIWJpTV1kFffzoRzIh5rQOkOVMrBR";
 
 const LABELS: Record<string, string> = {
   "BTC-USD": "BTC",
