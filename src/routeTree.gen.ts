@@ -13,6 +13,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as MoreRouteImport } from './routes/more'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as LearnRouteImport } from './routes/learn'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as InvestRouteImport } from './routes/invest'
@@ -40,6 +41,11 @@ const OrdersRoute = OrdersRouteImport.update({
 const MoreRoute = MoreRouteImport.update({
   id: '/more',
   path: '/more',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LearnRoute = LearnRouteImport.update({
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/invest': typeof InvestRoute
   '/leaderboard': typeof LeaderboardRoute
   '/learn': typeof LearnRoute
+  '/login': typeof LoginRoute
   '/more': typeof MoreRoute
   '/orders': typeof OrdersRoute
   '/portfolio': typeof PortfolioRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/invest': typeof InvestRoute
   '/leaderboard': typeof LeaderboardRoute
   '/learn': typeof LearnRoute
+  '/login': typeof LoginRoute
   '/more': typeof MoreRoute
   '/orders': typeof OrdersRoute
   '/portfolio': typeof PortfolioRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/invest': typeof InvestRoute
   '/leaderboard': typeof LeaderboardRoute
   '/learn': typeof LearnRoute
+  '/login': typeof LoginRoute
   '/more': typeof MoreRoute
   '/orders': typeof OrdersRoute
   '/portfolio': typeof PortfolioRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/invest'
     | '/leaderboard'
     | '/learn'
+    | '/login'
     | '/more'
     | '/orders'
     | '/portfolio'
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
     | '/invest'
     | '/leaderboard'
     | '/learn'
+    | '/login'
     | '/more'
     | '/orders'
     | '/portfolio'
@@ -165,6 +176,7 @@ export interface FileRouteTypes {
     | '/invest'
     | '/leaderboard'
     | '/learn'
+    | '/login'
     | '/more'
     | '/orders'
     | '/portfolio'
@@ -180,6 +192,7 @@ export interface RootRouteChildren {
   InvestRoute: typeof InvestRoute
   LeaderboardRoute: typeof LeaderboardRoute
   LearnRoute: typeof LearnRoute
+  LoginRoute: typeof LoginRoute
   MoreRoute: typeof MoreRoute
   OrdersRoute: typeof OrdersRoute
   PortfolioRoute: typeof PortfolioRoute
@@ -214,6 +227,13 @@ declare module '@tanstack/react-router' {
       path: '/more'
       fullPath: '/more'
       preLoaderRoute: typeof MoreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/learn': {
@@ -284,6 +304,7 @@ const rootRouteChildren: RootRouteChildren = {
   InvestRoute: InvestRoute,
   LeaderboardRoute: LeaderboardRoute,
   LearnRoute: LearnRoute,
+  LoginRoute: LoginRoute,
   MoreRoute: MoreRoute,
   OrdersRoute: OrdersRoute,
   PortfolioRoute: PortfolioRoute,

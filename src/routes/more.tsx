@@ -4,7 +4,7 @@ import { Logo } from "@/components/Logo";
 import { EditProfileDialog } from "@/components/EditProfileDialog";
 import { ShareProfileDialog } from "@/components/ShareProfileDialog";
 import { useProfile, useFollows } from "@/lib/profile-store";
-import { Bot, Compass, ListOrdered, Trophy, GraduationCap, HelpCircle, Settings, Share2, Pencil } from "lucide-react";
+import { Bot, Compass, ListOrdered, Trophy, GraduationCap, HelpCircle, Settings, Share2, Pencil, LogIn } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/more")({
@@ -26,6 +26,7 @@ const items: Item[] = [
   { to: "/learn", label: "Learn", icon: GraduationCap },
   { to: "/help", label: "Help & FAQ", icon: HelpCircle },
   { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/login", label: "Sign in / Sign up", icon: LogIn, highlight: true },
 ];
 
 function MorePage() {
