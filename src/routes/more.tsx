@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
 import { EditProfileDialog } from "@/components/EditProfileDialog";
+import { ShareProfileDialog } from "@/components/ShareProfileDialog";
 import { useProfile, useFollows } from "@/lib/profile-store";
 import { Bot, Compass, ListOrdered, Trophy, GraduationCap, HelpCircle, Settings, Share2, Pencil } from "lucide-react";
 import { useState } from "react";
