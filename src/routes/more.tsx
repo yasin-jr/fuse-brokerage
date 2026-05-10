@@ -104,6 +104,7 @@ function MorePage() {
       </div>
 
       <EditProfileDialog open={editing} onClose={() => setEditing(false)} />
+      <ShareProfileDialog open={sharing} onClose={() => setSharing(false)} url={shareUrl} title={shareTitle} />
     </AppShell>
   );
 }
