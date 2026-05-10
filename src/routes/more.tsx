@@ -80,7 +80,7 @@ function MorePage() {
             <button onClick={() => setEditing(true)} className="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-secondary/50 py-2 text-xs hover:bg-secondary">
               <Pencil className="h-3.5 w-3.5" /> Edit profile
             </button>
-            <button onClick={share} className="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-secondary/50 py-2 text-xs hover:bg-secondary">
+            <button onClick={openShare} className="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-secondary/50 py-2 text-xs hover:bg-secondary">
               <Share2 className="h-3.5 w-3.5" /> Share profile
             </button>
           </div>
