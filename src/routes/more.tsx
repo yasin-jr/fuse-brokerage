@@ -30,23 +30,26 @@ const items: Item[] = [
 
 function MorePage() {
   const [editing, setEditing] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const profile = useProfile();
   const follows = useFollows();
 
-  const share = async () => {
-    const url = typeof window !== "undefined" ? window.location.origin : "https://fuse-brokerage.lovable.app";
-    const data = {
-      title: profile.username ? `${profile.username} on FusionSynergy` : "FusionSynergy",
-      text: profile.bio || "Check out my FusionSynergy profile.",
-      url,
-    };
+  const shareUrl =
+    typeof window !== "undefined" ? window.location.origin : "https://fuse-brokerage.lovable.app";
+  const shareTitle = profile.username
+    ? `Check out @${profile.username} on FusionSynergy`
+    : "Check out FusionSynergy";
+
+  const openShare = async () => {
+    // Prefer native share sheet on mobile; fall back to in-app dialog.
+    const data = { title: shareTitle, text: profile.bio || shareTitle, url: shareUrl };
     try {
-      if (navigator.share) await navigator.share(data);
-      else {
-        await navigator.clipboard.writeText(url);
-        alert("Profile link copied to clipboard");
+      if (typeof navigator !== "undefined" && (navigator as any).share) {
+        await (navigator as any).share(data);
+        return;
       }
     } catch {}
+    setSharing(true);
   };
 
   return (
