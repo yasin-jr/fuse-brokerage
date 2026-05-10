@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
 import { EditProfileDialog } from "@/components/EditProfileDialog";
+import { ShareProfileDialog } from "@/components/ShareProfileDialog";
 import { useProfile, useFollows } from "@/lib/profile-store";
 import { Bot, Compass, ListOrdered, Trophy, GraduationCap, HelpCircle, Settings, Share2, Pencil } from "lucide-react";
 import { useState } from "react";
@@ -29,23 +30,26 @@ const items: Item[] = [
 
 function MorePage() {
   const [editing, setEditing] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const profile = useProfile();
   const follows = useFollows();
 
-  const share = async () => {
-    const url = typeof window !== "undefined" ? window.location.origin : "https://fuse-brokerage.lovable.app";
-    const data = {
-      title: profile.username ? `${profile.username} on FusionSynergy` : "FusionSynergy",
-      text: profile.bio || "Check out my FusionSynergy profile.",
-      url,
-    };
+  const shareUrl =
+    typeof window !== "undefined" ? window.location.origin : "https://fuse-brokerage.lovable.app";
+  const shareTitle = profile.username
+    ? `Check out @${profile.username} on FusionSynergy`
+    : "Check out FusionSynergy";
+
+  const openShare = async () => {
+    // Prefer native share sheet on mobile; fall back to in-app dialog.
+    const data = { title: shareTitle, text: profile.bio || shareTitle, url: shareUrl };
     try {
-      if (navigator.share) await navigator.share(data);
-      else {
-        await navigator.clipboard.writeText(url);
-        alert("Profile link copied to clipboard");
+      if (typeof navigator !== "undefined" && (navigator as any).share) {
+        await (navigator as any).share(data);
+        return;
       }
     } catch {}
+    setSharing(true);
   };
 
   return (
@@ -76,7 +80,7 @@ function MorePage() {
             <button onClick={() => setEditing(true)} className="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-secondary/50 py-2 text-xs hover:bg-secondary">
               <Pencil className="h-3.5 w-3.5" /> Edit profile
             </button>
-            <button onClick={share} className="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-secondary/50 py-2 text-xs hover:bg-secondary">
+            <button onClick={openShare} className="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-secondary/50 py-2 text-xs hover:bg-secondary">
               <Share2 className="h-3.5 w-3.5" /> Share profile
             </button>
           </div>
@@ -100,6 +104,7 @@ function MorePage() {
       </div>
 
       <EditProfileDialog open={editing} onClose={() => setEditing(false)} />
+      <ShareProfileDialog open={sharing} onClose={() => setSharing(false)} url={shareUrl} title={shareTitle} />
     </AppShell>
   );
 }
