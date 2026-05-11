@@ -4,7 +4,15 @@ import { Logo } from "@/components/Logo";
 import { EditProfileDialog } from "@/components/EditProfileDialog";
 import { ShareProfileDialog } from "@/components/ShareProfileDialog";
 import { useProfile, useFollows } from "@/lib/profile-store";
-import { Bot, Compass, ListOrdered, Trophy, GraduationCap, HelpCircle, Settings, Share2, Pencil, LogIn } from "lucide-react";
+import { Bot, Compass, ListOrdered, Trophy, GraduationCap, HelpCircle, Settings, Share2, Pencil, LogIn, User } from "lucide-react";
+
+function DefaultAvatar() {
+  return (
+    <div className="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-secondary/60">
+      <User className="h-7 w-7 text-muted-foreground" />
+    </div>
+  );
+}
 import { useState } from "react";
 
 export const Route = createFileRoute("/more")({
@@ -62,14 +70,14 @@ function MorePage() {
             {profile.avatar ? (
               <img src={profile.avatar} alt="" className="h-14 w-14 rounded-full object-cover border border-border" />
             ) : (
-              <Logo className="h-14 w-14 rounded-full" />
+              <DefaultAvatar />
             )}
             <div className="flex-1">
               <div className="text-sm font-semibold">
-                {profile.username ? `@${profile.username}` : "Welcome 👋"}
+                {profile.username ? `@${profile.username}` : "Set your username"}
               </div>
               <div className="text-xs text-muted-foreground">
-                {profile.bio || "Set up your profile to get started"}
+                {profile.bio || (profile.email || "Tap edit to set up your profile")}
               </div>
               <div className="mt-1 flex gap-3 text-[11px] text-muted-foreground">
                 <span><b className="text-foreground">{follows.followers.length}</b> followers</span>

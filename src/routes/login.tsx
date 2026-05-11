@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Logo } from "@/components/Logo";
-import { Mail, Lock, Loader2, ArrowLeft } from "lucide-react";
+import { loadProfile, saveProfile } from "@/lib/profile-store";
+import { Mail, Lock, Loader2, ArrowLeft, User } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -18,17 +19,37 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [identifier, setIdentifier] = useState(""); // email or username on sign in
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState<"" | "email" | "google" | "apple">("");
   const [msg, setMsg] = useState<{ type: "err" | "ok"; text: string } | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/" });
+      if (data.session) {
+        const p = loadProfile();
+        navigate({ to: p.difficulty ? "/" : "/onboarding/difficulty" });
+      }
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      if (session) navigate({ to: "/" });
+      if (session) {
+        const meta = (session.user.user_metadata || {}) as Record<string, string>;
+        const p = loadProfile();
+        const next = {
+          ...p,
+          email: session.user.email || p.email || "",
+          username:
+            p.username ||
+            meta.username ||
+            meta.preferred_username ||
+            meta.name ||
+            (session.user.email ? session.user.email.split("@")[0] : "user"),
+        };
+        saveProfile(next);
+        navigate({ to: next.difficulty ? "/" : "/onboarding/difficulty" });
+      }
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
@@ -39,15 +60,33 @@ function LoginPage() {
     setMsg(null);
     try {
       if (mode === "signup") {
+        if (!username.trim() || username.length < 3) throw new Error("Username must be at least 3 characters.");
+        if (!/^[a-zA-Z0-9_]+$/.test(username)) throw new Error("Username can only contain letters, numbers, and _");
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin },
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: { username },
+          },
         });
         if (error) throw error;
-        setMsg({ type: "ok", text: "Check your email to confirm your account." });
+        const p = loadProfile();
+        saveProfile({ ...p, username, email });
+        setMsg({ type: "ok", text: "Account created. Check your email to confirm, then sign in." });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        // Allow username OR email on sign in.
+        let loginEmail = identifier;
+        if (!identifier.includes("@")) {
+          // Stored locally? Use saved email for that username.
+          const p = loadProfile();
+          if (p.username && p.username.toLowerCase() === identifier.toLowerCase() && p.email) {
+            loginEmail = p.email;
+          } else {
+            throw new Error("Username sign-in requires you to have signed in here before. Try your email.");
+          }
+        }
+        const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
         if (error) throw error;
       }
     } catch (err: any) {
@@ -78,18 +117,20 @@ function LoginPage() {
           <ArrowLeft className="h-3.5 w-3.5" /> Back
         </Link>
 
-        <div className="mt-8 flex flex-col items-center text-center">
-          <Logo className="h-14 w-14" />
-          <h1 className="mt-4 text-2xl font-semibold">
+        <div className="mt-6 flex flex-col items-center text-center">
+          <div className="rounded-full bg-background p-1 ring-1 ring-border">
+            <Logo className="h-16 w-16 rounded-full" />
+          </div>
+          <h1 className="mt-4 text-2xl font-semibold tracking-tight">
             <span className="text-foreground">Fusion</span>
             <span className="bg-fuse-gradient bg-clip-text text-transparent">Synergy</span>
           </h1>
           <p className="mt-1 text-xs text-muted-foreground">
-            {mode === "signin" ? "Welcome back" : "Create your account"}
+            {mode === "signin" ? "Welcome back. Sign in to continue." : "Create your account to start trading."}
           </p>
         </div>
 
-        <div className="mt-8 space-y-3">
+        <div className="mt-7 space-y-2.5">
           <button
             onClick={() => oauth("google")}
             disabled={!!busy}
@@ -109,33 +150,21 @@ function LoginPage() {
         </div>
 
         <div className="my-5 flex items-center gap-3 text-[10px] uppercase tracking-wider text-muted-foreground">
-          <span className="h-px flex-1 bg-border" /> or email <span className="h-px flex-1 bg-border" />
+          <span className="h-px flex-1 bg-border" /> or {mode === "signin" ? "sign in with email" : "use email"}
+          <span className="h-px flex-1 bg-border" />
         </div>
 
-        <form onSubmit={onEmail} className="space-y-3">
-          <label className="flex items-center gap-2 rounded-lg border border-border bg-secondary/30 px-3">
-            <Mail className="h-4 w-4 text-muted-foreground" />
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@email.com"
-              className="flex-1 bg-transparent py-2.5 text-sm outline-none"
-            />
-          </label>
-          <label className="flex items-center gap-2 rounded-lg border border-border bg-secondary/30 px-3">
-            <Lock className="h-4 w-4 text-muted-foreground" />
-            <input
-              type="password"
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              className="flex-1 bg-transparent py-2.5 text-sm outline-none"
-            />
-          </label>
+        <form onSubmit={onEmail} className="space-y-2.5">
+          {mode === "signup" && (
+            <>
+              <Field icon={User} placeholder="Username" value={username} onChange={setUsername} required />
+              <Field icon={Mail} type="email" placeholder="you@email.com" value={email} onChange={setEmail} required />
+            </>
+          )}
+          {mode === "signin" && (
+            <Field icon={Mail} placeholder="Email or username" value={identifier} onChange={setIdentifier} required />
+          )}
+          <Field icon={Lock} type="password" placeholder="Password" value={password} onChange={setPassword} required minLength={6} />
           <button
             type="submit"
             disabled={!!busy}
@@ -167,6 +196,28 @@ function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+function Field({
+  icon: Icon, type = "text", placeholder, value, onChange, required, minLength,
+}: {
+  icon: typeof Mail; type?: string; placeholder: string; value: string;
+  onChange: (v: string) => void; required?: boolean; minLength?: number;
+}) {
+  return (
+    <label className="flex items-center gap-2 rounded-lg border border-border bg-secondary/30 px-3">
+      <Icon className="h-4 w-4 text-muted-foreground" />
+      <input
+        type={type}
+        required={required}
+        minLength={minLength}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="flex-1 bg-transparent py-2.5 text-sm outline-none"
+      />
+    </label>
   );
 }
 
