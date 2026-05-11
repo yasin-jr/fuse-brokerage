@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 
+export type Difficulty = "easy" | "medium-long" | "medium-short" | "hard";
+
 export type Profile = {
   username: string;
   bio: string;
   avatar: string; // data URL
+  email?: string;
+  difficulty?: Difficulty;
 };
 
 const KEY = "fuse-profile";
@@ -23,6 +27,15 @@ export function loadProfile(): Profile {
 export function saveProfile(p: Profile) {
   try {
     localStorage.setItem(KEY, JSON.stringify(p));
+    window.dispatchEvent(new Event("fuse-profile-change"));
+  } catch {}
+}
+
+export function clearAccountData() {
+  try {
+    ["fuse-profile", "fuse-posts", "fuse-follows", "fuse-portfolio", "fuse-orders", "fuse-trades", "fuse-points"].forEach(
+      (k) => localStorage.removeItem(k),
+    );
     window.dispatchEvent(new Event("fuse-profile-change"));
   } catch {}
 }
