@@ -4,12 +4,15 @@ import { AppShell } from "@/components/AppShell";
 import { BackBar } from "@/components/BackBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
-import { useProfile, clearAccountData } from "@/lib/profile-store";
+import { useProfile, saveProfile, loadProfile, clearAccountData } from "@/lib/profile-store";
+import { X, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "Settings — FusionSynergy" }] }),
   component: SettingsPage,
 });
+
+type EditField = null | "username" | "email" | "password";
 
 function Row({ label, value, onClick }: { label: string; value?: string; onClick?: () => void }) {
   return (
@@ -31,6 +34,7 @@ function SettingsPage() {
   const profile = useProfile();
   const [confirmReset, setConfirmReset] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [editing, setEditing] = useState<EditField>(null);
 
   const signOut = async () => {
     setBusy(true);
@@ -59,9 +63,9 @@ function SettingsPage() {
         <section>
           <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Account</h2>
           <div className="glass rounded-xl divide-y divide-border/50">
-            <Row label="Username" value={profile.username ? `@${profile.username}` : "—"} />
-            <Row label="Email" value={profile.email || "—"} />
-            <Row label="Password" value="••••••••" />
+            <Row label="Username" value={profile.username ? `@${profile.username}` : "—"} onClick={() => setEditing("username")} />
+            <Row label="Email" value={profile.email || "—"} onClick={() => setEditing("email")} />
+            <Row label="Password" value="••••••••" onClick={() => setEditing("password")} />
             <Row label="Difficulty" value={profile.difficulty?.toUpperCase() || "—"} />
           </div>
         </section>
@@ -89,7 +93,7 @@ function SettingsPage() {
           <div className="glass rounded-xl divide-y divide-border/50">
             <Row label="Currency" value="USD" />
             <Row label="Paper vs Live trading" value="Paper" />
-            <Row label="Replay onboarding" />
+            <Row label="Replay onboarding" onClick={() => navigate({ to: "/onboarding/difficulty" })} />
           </div>
         </section>
 
@@ -101,6 +105,8 @@ function SettingsPage() {
           </div>
         </section>
       </div>
+
+      {editing && <EditDialog field={editing} onClose={() => setEditing(null)} currentEmail={profile.email || ""} />}
 
       {confirmReset && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
@@ -128,5 +134,84 @@ function SettingsPage() {
         </div>
       )}
     </AppShell>
+  );
+}
+
+function EditDialog({ field, onClose, currentEmail }: { field: Exclude<EditField, null>; onClose: () => void; currentEmail: string }) {
+  const [val, setVal] = useState("");
+  const [val2, setVal2] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ type: "err" | "ok"; text: string } | null>(null);
+
+  const title = field === "username" ? "Change username" : field === "email" ? "Change email" : "Change password";
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setMsg(null);
+    try {
+      if (field === "username") {
+        if (val.length < 3 || !/^[a-zA-Z0-9_]+$/.test(val)) throw new Error("Letters, numbers, _ — min 3 chars.");
+        const p = loadProfile();
+        saveProfile({ ...p, username: val });
+        await supabase.auth.updateUser({ data: { username: val } });
+        setMsg({ type: "ok", text: "Username updated." });
+        setTimeout(onClose, 700);
+      } else if (field === "email") {
+        const { error } = await supabase.auth.updateUser({ email: val });
+        if (error) throw error;
+        setMsg({ type: "ok", text: "Confirm the change from the link sent to your new email." });
+      } else {
+        if (val.length < 6) throw new Error("Password must be at least 6 characters.");
+        if (val !== val2) throw new Error("Passwords don't match.");
+        const { error } = await supabase.auth.updateUser({ password: val });
+        if (error) throw error;
+        setMsg({ type: "ok", text: "Password updated." });
+        setTimeout(onClose, 700);
+      }
+    } catch (err: any) {
+      setMsg({ type: "err", text: err?.message || "Failed." });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={onClose}>
+      <form onSubmit={submit} onClick={(e) => e.stopPropagation()} className="glass w-full max-w-sm rounded-2xl p-5 space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold">{title}</h3>
+          <button type="button" onClick={onClose}><X className="h-4 w-4 text-muted-foreground" /></button>
+        </div>
+        {field === "email" && (
+          <p className="text-xs text-muted-foreground">Current: {currentEmail || "—"}</p>
+        )}
+        <input
+          type={field === "password" ? "password" : field === "email" ? "email" : "text"}
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+          placeholder={field === "username" ? "newusername" : field === "email" ? "new@email.com" : "New password"}
+          required
+          className="w-full rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm outline-none"
+        />
+        {field === "password" && (
+          <input
+            type="password"
+            value={val2}
+            onChange={(e) => setVal2(e.target.value)}
+            placeholder="Confirm new password"
+            required
+            className="w-full rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm outline-none"
+          />
+        )}
+        {msg && <p className={`text-xs ${msg.type === "err" ? "text-rose-400" : "text-emerald-400"}`}>{msg.text}</p>}
+        <div className="grid grid-cols-2 gap-2">
+          <button type="button" onClick={onClose} className="rounded-lg border border-border bg-secondary/50 py-2 text-sm">Cancel</button>
+          <button disabled={busy} className="flex items-center justify-center gap-1 rounded-lg bg-fuse-gradient py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50">
+            {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />} Save
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
