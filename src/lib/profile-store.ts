@@ -11,6 +11,7 @@ export type Profile = {
 };
 
 const KEY = "fuse-profile";
+const ACCOUNTS_KEY = "fuse-accounts"; // username -> email map (device-local)
 const DEFAULT: Profile = { username: "", bio: "", avatar: "" };
 
 export function loadProfile(): Profile {
@@ -27,12 +28,32 @@ export function loadProfile(): Profile {
 export function saveProfile(p: Profile) {
   try {
     localStorage.setItem(KEY, JSON.stringify(p));
+    if (p.username && p.email) {
+      const accounts = loadAccounts();
+      accounts[p.username.toLowerCase()] = p.email;
+      localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+    }
     window.dispatchEvent(new Event("fuse-profile-change"));
   } catch {}
 }
 
+export function loadAccounts(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  try {
+    return JSON.parse(localStorage.getItem(ACCOUNTS_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+export function lookupEmailByUsername(username: string): string | null {
+  const accounts = loadAccounts();
+  return accounts[username.toLowerCase()] || null;
+}
+
 export function clearAccountData() {
   try {
+    // Clear profile + activity but keep accounts map so user can re-sign-in by username elsewhere
     ["fuse-profile", "fuse-posts", "fuse-follows", "fuse-portfolio", "fuse-orders", "fuse-trades", "fuse-points"].forEach(
       (k) => localStorage.removeItem(k),
     );
