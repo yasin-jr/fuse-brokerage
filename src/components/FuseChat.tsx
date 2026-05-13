@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useServerFn } from "@tanstack/react-start";
-import { Send, Sparkles, TrendingUp } from "lucide-react";
+import { Send, TrendingUp, Trash2 } from "lucide-react";
 import { fuseChat } from "@/lib/chat.functions";
+import { Logo } from "@/components/Logo";
+import { loadChat, saveChat, clearChat, type ChatMsg } from "@/lib/profile-store";
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Msg = ChatMsg;
 
 const SUGGESTIONS = [
   "What's moving the market today?",
@@ -13,22 +15,37 @@ const SUGGESTIONS = [
   "How do I start practice trading?",
 ];
 
+const GREETING: Msg = {
+  role: "assistant",
+  content:
+    "Hey! I'm **FUSE**, your FusionSynergy sidekick. Ask me about a stock, what's moving the market today, or how anything in the app works. Where do you want to start?",
+};
+
 export function FuseChat() {
-  const [messages, setMessages] = useState<Msg[]>([
-    {
-      role: "assistant",
-      content:
-        "Hey! I'm **FUSE**, your FusionSynergy sidekick. Ask me about a stock, what's moving the market today, or how anything in the app works. Where do you want to start?",
-    },
-  ]);
+  const [messages, setMessages] = useState<Msg[]>([GREETING]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sendFn = useServerFn(fuseChat);
 
+  // Restore history on mount
   useEffect(() => {
+    const saved = loadChat();
+    if (saved.length > 0) setMessages(saved);
+  }, []);
+
+  // Persist on every change (skip the lone greeting)
+  useEffect(() => {
+    if (messages.length > 1 || messages[0]?.content !== GREETING.content) {
+      saveChat(messages);
+    }
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, loading]);
+
+  const reset = () => {
+    clearChat();
+    setMessages([GREETING]);
+  };
 
   async function send(text: string) {
     const trimmed = text.trim();
@@ -52,17 +69,26 @@ export function FuseChat() {
     <div className="glass shadow-soft mx-auto flex h-[78vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl">
       <header className="flex items-center justify-between border-b border-border/60 px-5 py-4">
         <div className="flex items-center gap-3">
-          <div className="bg-fuse-gradient shadow-glow flex h-10 w-10 items-center justify-center rounded-xl">
-            <Sparkles className="h-5 w-5 text-primary-foreground" />
+          <div className="shadow-glow ring-fuse-cyan/40 flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl ring-1">
+            <Logo className="h-10 w-10 rounded-xl" />
           </div>
           <div>
             <h2 className="text-sm font-semibold tracking-wide">FUSE AI</h2>
             <p className="text-xs text-muted-foreground">FusionSynergy Intelligence Engine</p>
           </div>
         </div>
-        <div className="hidden items-center gap-1.5 rounded-full bg-secondary/60 px-3 py-1 text-xs text-muted-foreground sm:flex">
-          <span className="h-1.5 w-1.5 rounded-full bg-fuse-cyan animate-pulse" />
-          Online
+        <div className="flex items-center gap-2">
+          <button
+            onClick={reset}
+            className="flex items-center gap-1 rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[11px] text-muted-foreground hover:text-foreground"
+            aria-label="Clear chat"
+          >
+            <Trash2 className="h-3 w-3" /> Clear
+          </button>
+          <div className="hidden items-center gap-1.5 rounded-full bg-secondary/60 px-3 py-1 text-xs text-muted-foreground sm:flex">
+            <span className="bg-fuse-cyan h-1.5 w-1.5 animate-pulse rounded-full" />
+            Online
+          </div>
         </div>
       </header>
 

@@ -217,10 +217,13 @@ function LoginPage() {
                 {busy === "apple" ? <Loader2 className="h-4 w-4 animate-spin" /> : <AppleIcon />}
                 Continue with Apple
               </button>
-              <button onClick={() => oauth("microsoft")} disabled={!!busy}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-secondary/40 py-2.5 text-sm font-medium hover:bg-secondary disabled:opacity-50">
-                {busy === "microsoft" ? <Loader2 className="h-4 w-4 animate-spin" /> : <MicrosoftIcon />}
+              <button
+                type="button"
+                onClick={() => setMsg({ type: "err", text: "Microsoft sign-in is rolling out soon — use Google, Apple, or email for now." })}
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-secondary/20 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary/40">
+                <MicrosoftIcon />
                 Continue with Microsoft
+                <span className="ml-1 rounded-full bg-secondary px-1.5 py-0.5 text-[9px] uppercase tracking-wide">Soon</span>
               </button>
             </div>
 

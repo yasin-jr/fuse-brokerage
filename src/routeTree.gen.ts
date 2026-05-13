@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as MoreRouteImport } from './routes/more'
@@ -27,6 +28,11 @@ import { Route as OnboardingDifficultyRouteImport } from './routes/onboarding.di
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectsRoute = ProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PortfolioRoute = PortfolioRouteImport.update({
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/more': typeof MoreRoute
   '/orders': typeof OrdersRoute
   '/portfolio': typeof PortfolioRoute
+  '/projects': typeof ProjectsRoute
   '/settings': typeof SettingsRoute
   '/onboarding/difficulty': typeof OnboardingDifficultyRoute
 }
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/more': typeof MoreRoute
   '/orders': typeof OrdersRoute
   '/portfolio': typeof PortfolioRoute
+  '/projects': typeof ProjectsRoute
   '/settings': typeof SettingsRoute
   '/onboarding/difficulty': typeof OnboardingDifficultyRoute
 }
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/more': typeof MoreRoute
   '/orders': typeof OrdersRoute
   '/portfolio': typeof PortfolioRoute
+  '/projects': typeof ProjectsRoute
   '/settings': typeof SettingsRoute
   '/onboarding/difficulty': typeof OnboardingDifficultyRoute
 }
@@ -159,6 +168,7 @@ export interface FileRouteTypes {
     | '/more'
     | '/orders'
     | '/portfolio'
+    | '/projects'
     | '/settings'
     | '/onboarding/difficulty'
   fileRoutesByTo: FileRoutesByTo
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
     | '/more'
     | '/orders'
     | '/portfolio'
+    | '/projects'
     | '/settings'
     | '/onboarding/difficulty'
   id:
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
     | '/more'
     | '/orders'
     | '/portfolio'
+    | '/projects'
     | '/settings'
     | '/onboarding/difficulty'
   fileRoutesById: FileRoutesById
@@ -208,6 +220,7 @@ export interface RootRouteChildren {
   MoreRoute: typeof MoreRoute
   OrdersRoute: typeof OrdersRoute
   PortfolioRoute: typeof PortfolioRoute
+  ProjectsRoute: typeof ProjectsRoute
   SettingsRoute: typeof SettingsRoute
   OnboardingDifficultyRoute: typeof OnboardingDifficultyRoute
 }
@@ -219,6 +232,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects': {
+      id: '/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof ProjectsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portfolio': {
@@ -328,6 +348,7 @@ const rootRouteChildren: RootRouteChildren = {
   MoreRoute: MoreRoute,
   OrdersRoute: OrdersRoute,
   PortfolioRoute: PortfolioRoute,
+  ProjectsRoute: ProjectsRoute,
   SettingsRoute: SettingsRoute,
   OnboardingDifficultyRoute: OnboardingDifficultyRoute,
 }
