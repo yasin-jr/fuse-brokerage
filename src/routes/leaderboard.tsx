@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { BackBar } from "@/components/BackBar";
-import { useFollows, saveFollows } from "@/lib/profile-store";
+import { useFollows, saveFollows, useStreak } from "@/lib/profile-store";
+import { Flame, Trophy } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/leaderboard")({
@@ -15,6 +16,7 @@ type Tab = typeof TABS[number];
 function LeaderboardPage() {
   const [tab, setTab] = useState<Tab>("Worldwide");
   const follows = useFollows();
+  const streak = useStreak();
 
   const counts = {
     Worldwide: 0,
@@ -36,6 +38,21 @@ function LeaderboardPage() {
       <BackBar />
       <div className="mx-auto max-w-3xl px-4 py-6 space-y-4">
         <h1 className="text-2xl font-semibold">🏆 Leaderboard</h1>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="glass rounded-xl p-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Flame className="h-3.5 w-3.5 text-orange-400" /> Current streak
+            </div>
+            <div className="mt-1 text-2xl font-semibold">{streak.current} <span className="text-sm font-normal text-muted-foreground">days</span></div>
+          </div>
+          <div className="glass rounded-xl p-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Trophy className="h-3.5 w-3.5 text-yellow-400" /> Personal best
+            </div>
+            <div className="mt-1 text-2xl font-semibold">{streak.best} <span className="text-sm font-normal text-muted-foreground">days</span></div>
+          </div>
+        </div>
 
         <div className="flex gap-2 overflow-x-auto pb-1 text-xs">
           {TABS.map((t) => (
