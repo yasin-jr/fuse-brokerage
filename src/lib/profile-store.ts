@@ -148,3 +148,78 @@ export function useFollows() {
   }, []);
   return f;
 }
+
+// ---------- streak engine ----------
+
+const STREAK_KEY = "fuse-streak";
+type StreakState = { current: number; best: number; lastDay: string };
+const DEFAULT_STREAK: StreakState = { current: 0, best: 0, lastDay: "" };
+
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+function yesterdayKey() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+export function loadStreak(): StreakState {
+  if (typeof window === "undefined") return DEFAULT_STREAK;
+  try {
+    return { ...DEFAULT_STREAK, ...JSON.parse(localStorage.getItem(STREAK_KEY) || "{}") };
+  } catch {
+    return DEFAULT_STREAK;
+  }
+}
+
+/** Call once per app session. Bumps streak if a new day; resets if a day was missed. */
+export function pingStreak(): StreakState {
+  if (typeof window === "undefined") return DEFAULT_STREAK;
+  const s = loadStreak();
+  const today = todayKey();
+  if (s.lastDay === today) return s;
+  const next: StreakState =
+    s.lastDay === yesterdayKey()
+      ? { current: s.current + 1, best: Math.max(s.best, s.current + 1), lastDay: today }
+      : { current: 1, best: Math.max(s.best, 1), lastDay: today };
+  try {
+    localStorage.setItem(STREAK_KEY, JSON.stringify(next));
+    window.dispatchEvent(new Event("fuse-streak-change"));
+  } catch {}
+  return next;
+}
+
+export function useStreak() {
+  const [s, setS] = useState<StreakState>(DEFAULT_STREAK);
+  useEffect(() => {
+    setS(pingStreak());
+    const handler = () => setS(loadStreak());
+    window.addEventListener("fuse-streak-change", handler);
+    return () => window.removeEventListener("fuse-streak-change", handler);
+  }, []);
+  return s;
+}
+
+// ---------- chat history ----------
+
+const CHAT_KEY = "fuse-chat";
+export type ChatMsg = { role: "user" | "assistant"; content: string };
+
+export function loadChat(): ChatMsg[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem(CHAT_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+export function saveChat(msgs: ChatMsg[]) {
+  try {
+    localStorage.setItem(CHAT_KEY, JSON.stringify(msgs.slice(-100)));
+  } catch {}
+}
+export function clearChat() {
+  try { localStorage.removeItem(CHAT_KEY); } catch {}
+}

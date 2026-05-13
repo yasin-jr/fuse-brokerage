@@ -4,7 +4,7 @@ import { Logo } from "@/components/Logo";
 import { EditProfileDialog } from "@/components/EditProfileDialog";
 import { ShareProfileDialog } from "@/components/ShareProfileDialog";
 import { useProfile, useFollows } from "@/lib/profile-store";
-import { Bot, Compass, ListOrdered, Trophy, GraduationCap, HelpCircle, Settings, Share2, Pencil, LogIn, User } from "lucide-react";
+import { Bot, Compass, ListOrdered, Trophy, GraduationCap, HelpCircle, Settings, Share2, Pencil, LogIn, User, FolderKanban } from "lucide-react";
 
 function DefaultAvatar() {
   return (
@@ -31,6 +31,7 @@ const items: Item[] = [
   { to: "/ai", label: "FUSE AI", icon: Bot, highlight: true },
   { to: "/orders", label: "Orders", icon: ListOrdered },
   { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
+  { to: "/projects", label: "Our Projects", icon: FolderKanban },
   { to: "/learn", label: "Learn", icon: GraduationCap },
   { to: "/help", label: "Help & FAQ", icon: HelpCircle },
   { to: "/settings", label: "Settings", icon: Settings },
