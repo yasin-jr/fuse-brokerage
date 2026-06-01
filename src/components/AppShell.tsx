@@ -19,7 +19,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="pointer-events-none fixed -top-40 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-fuse-cyan/15 blur-3xl" />
       <div className="pointer-events-none fixed bottom-20 right-0 h-[400px] w-[400px] rounded-full bg-fuse-violet/10 blur-3xl" />
 
-      <div className="relative">{children}</div>
+      <main className="relative">{children}</main>
 
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/60 bg-background/80 backdrop-blur-xl">
         <ul className="mx-auto flex max-w-3xl items-stretch justify-around">

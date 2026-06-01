@@ -1,0 +1,23 @@
+# FusionSynergy
+
+> AI-powered fintech platform for practice trading, market intelligence, and learning the markets — built for beginners and experts alike.
+
+FusionSynergy ("FUSE") combines live market data, a conversational AI assistant (FUSE AI), and a risk-free practice trading environment. The long-term vision spans quantum computing, multi-agent AI, biotech, and cybersecurity.
+
+## Pages
+
+- [Home](/): Portfolio overview, market movers, and quick access to FUSE AI.
+- [Invest](/invest): Sector maps, themes, and trending stocks.
+- [Portfolio](/portfolio): Holdings, sector mix, and performance vs major indices.
+- [Discover](/discover): Trending stocks, themes and screeners.
+- [FUSE AI](/ai): Conversational market intelligence and analysis.
+- [Community](/discussion): Discussion feed for trading ideas.
+- [Leaderboard](/leaderboard): Streaks and rankings.
+- [Orders](/orders): Practice trade history.
+- [Learn](/learn): Short lessons for new traders.
+- [Our Projects](/projects): Flagship and upcoming FusionSynergy projects.
+- [Help & FAQ](/help): Common questions about the platform.
+
+## Optional
+
+- [Settings](/settings): Account preferences.
