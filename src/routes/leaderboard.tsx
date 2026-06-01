@@ -6,7 +6,16 @@ import { Flame, Trophy } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/leaderboard")({
-  head: () => ({ meta: [{ title: "Leaderboard — FusionSynergy" }] }),
+  head: () => ({
+    meta: [
+      { title: "Leaderboard — FusionSynergy" },
+      { name: "description", content: "See top traders, your streaks, and how you stack up against the FusionSynergy community." },
+      { property: "og:title", content: "Leaderboard — FusionSynergy" },
+      { property: "og:description", content: "Streaks, rankings, and community standings on FusionSynergy." },
+      { property: "og:url", content: "https://fuse-brokerage.lovable.app/leaderboard" },
+    ],
+    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/leaderboard" }],
+  }),
   component: LeaderboardPage,
 });
 

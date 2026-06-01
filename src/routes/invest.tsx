@@ -19,7 +19,11 @@ export const Route = createFileRoute("/invest")({
     meta: [
       { title: "Invest — FusionSynergy" },
       { name: "description", content: "Live sector maps, themes, and trending stocks powered by FUSE Intelligence." },
+      { property: "og:title", content: "Invest — FusionSynergy" },
+      { property: "og:description", content: "Live sectors, themes, and trending stocks on FusionSynergy." },
+      { property: "og:url", content: "https://fuse-brokerage.lovable.app/invest" },
     ],
+    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/invest" }],
   }),
   component: InvestPage,
 });
