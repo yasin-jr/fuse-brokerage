@@ -10,8 +10,12 @@ export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
       { title: "Sign in — FusionSynergy" },
-      { name: "description", content: "Sign in or create your FusionSynergy account." },
+      { name: "description", content: "Sign in or create your FusionSynergy account to start practice trading and chat with FUSE AI." },
+      { property: "og:title", content: "Sign in — FusionSynergy" },
+      { property: "og:description", content: "Access your FusionSynergy account — AI-powered practice trading and live market intelligence." },
+      { property: "og:url", content: "https://fuse-brokerage.lovable.app/login" },
     ],
+    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/login" }],
   }),
   component: LoginPage,
 });
@@ -156,8 +160,8 @@ function LoginPage() {
             <Logo className="h-16 w-16 rounded-full" />
           </div>
           <h1 className="mt-4 text-2xl font-semibold tracking-tight">
-            <span className="text-foreground">Fusion</span>
-            <span className="bg-fuse-gradient bg-clip-text text-transparent">Synergy</span>
+            <span className="text-foreground">Fusion</span><span className="bg-fuse-gradient bg-clip-text text-transparent">Synergy</span>
+            <span className="block text-xs font-normal text-muted-foreground mt-1">Where Intelligence Meets Finance</span>
           </h1>
           <p className="mt-2 max-w-xs text-[11px] italic text-muted-foreground">
             “Where Intelligence Meets Finance — discipline today, freedom tomorrow.”

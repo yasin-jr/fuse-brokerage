@@ -7,8 +7,12 @@ export const Route = createFileRoute("/ai")({
   head: () => ({
     meta: [
       { title: "FUSE AI — Intelligence Engine" },
-      { name: "description", content: "Chat with FUSE AI: market analysis, geopolitics, FusionSynergy knowledge." },
+      { name: "description", content: "Chat with FUSE AI: market analysis, geopolitics, FusionSynergy knowledge — on demand." },
+      { property: "og:title", content: "FUSE AI — Intelligence Engine" },
+      { property: "og:description", content: "Conversational market intelligence from FusionSynergy." },
+      { property: "og:url", content: "https://fuse-brokerage.lovable.app/ai" },
     ],
+    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/ai" }],
   }),
   component: AIPage,
 });

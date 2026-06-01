@@ -11,7 +11,11 @@ export const Route = createFileRoute("/projects")({
     meta: [
       { title: "Our Projects — FusionSynergy" },
       { name: "description", content: "Explore FusionSynergy's flagship projects and what's coming next at the intersection of quantum computing, AI, and frontier science." },
+      { property: "og:title", content: "Our Projects — FusionSynergy" },
+      { property: "og:description", content: "Flagship and upcoming FusionSynergy projects across fintech, quantum, and AI." },
+      { property: "og:url", content: "https://fuse-brokerage.lovable.app/projects" },
     ],
+    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/projects" }],
   }),
   component: ProjectsPage,
 });

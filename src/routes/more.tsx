@@ -19,8 +19,12 @@ export const Route = createFileRoute("/more")({
   head: () => ({
     meta: [
       { title: "More — FusionSynergy" },
-      { name: "description", content: "Profile, FUSE AI, Discover, Orders, Leaderboard, Learn, Help, Settings." },
+      { name: "description", content: "Profile, FUSE AI, Discover, Orders, Leaderboard, Learn, Help, and Settings — all in one place." },
+      { property: "og:title", content: "More — FusionSynergy" },
+      { property: "og:description", content: "All your FusionSynergy tools in one menu." },
+      { property: "og:url", content: "https://fuse-brokerage.lovable.app/more" },
     ],
+    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/more" }],
   }),
   component: MorePage,
 });

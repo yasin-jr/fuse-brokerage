@@ -14,7 +14,11 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "FusionSynergy — Where Intelligence Meets Finance" },
       { name: "description", content: "FusionSynergy: AI-powered practice trading. Track markets, learn the ropes, and chat with FUSE AI." },
+      { property: "og:title", content: "FusionSynergy — Where Intelligence Meets Finance" },
+      { property: "og:description", content: "AI-powered practice trading, live markets, and FUSE AI — built for beginners and experts." },
+      { property: "og:url", content: "https://fuse-brokerage.lovable.app/" },
     ],
+    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/" }],
   }),
   component: HomePage,
 });
@@ -58,10 +62,10 @@ function HomePage() {
         {/* Hero / portfolio */}
         {hasPortfolio ? (
           <header>
-            <p className="text-sm text-muted-foreground">Total portfolio</p>
-            <h1 className="mt-1 text-3xl font-semibold tracking-tight">
+            <h1 className="text-sm text-muted-foreground font-normal">Your portfolio balance</h1>
+            <p className="mt-1 text-3xl font-semibold tracking-tight">
               ${PORTFOLIO.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-            </h1>
+            </p>
             <div className="mt-1 flex items-center gap-3 text-sm">
               <span className="text-emerald-400 font-medium">+${PORTFOLIO.todayPnL.toFixed(2)}</span>
               <PriceTag change={PORTFOLIO.todayPnLPct} />

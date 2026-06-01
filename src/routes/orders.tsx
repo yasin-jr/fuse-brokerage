@@ -6,7 +6,16 @@ import { RECENT_ORDERS } from "@/lib/mock-data";
 import { Receipt } from "lucide-react";
 
 export const Route = createFileRoute("/orders")({
-  head: () => ({ meta: [{ title: "Orders — FusionSynergy" }] }),
+  head: () => ({
+    meta: [
+      { title: "Orders — FusionSynergy" },
+      { name: "description", content: "Your pending and filled practice trades — track every order across your FusionSynergy portfolio." },
+      { property: "og:title", content: "Orders — FusionSynergy" },
+      { property: "og:description", content: "Track pending and filled practice trades on FusionSynergy." },
+      { property: "og:url", content: "https://fuse-brokerage.lovable.app/orders" },
+    ],
+    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/orders" }],
+  }),
   component: OrdersPage,
 });
 

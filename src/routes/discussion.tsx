@@ -9,8 +9,12 @@ export const Route = createFileRoute("/discussion")({
   head: () => ({
     meta: [
       { title: "Community — FusionSynergy" },
-      { name: "description", content: "Share what you're watching, swap ideas, and see what the community thinks." },
+      { name: "description", content: "Share what you're watching, swap ideas, and see what the FusionSynergy community thinks." },
+      { property: "og:title", content: "Community — FusionSynergy" },
+      { property: "og:description", content: "Discussion feed for trading ideas and market chatter." },
+      { property: "og:url", content: "https://fuse-brokerage.lovable.app/discussion" },
     ],
+    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/discussion" }],
   }),
   component: DiscussionPage,
 });

@@ -3,7 +3,16 @@ import { AppShell } from "@/components/AppShell";
 import { BackBar } from "@/components/BackBar";
 
 export const Route = createFileRoute("/learn")({
-  head: () => ({ meta: [{ title: "Learn — FusionSynergy" }] }),
+  head: () => ({
+    meta: [
+      { title: "Learn — FusionSynergy" },
+      { name: "description", content: "Short, casual lessons to help new traders find their footing in the markets." },
+      { property: "og:title", content: "Learn — FusionSynergy" },
+      { property: "og:description", content: "Bite-size trading and markets lessons from FusionSynergy." },
+      { property: "og:url", content: "https://fuse-brokerage.lovable.app/learn" },
+    ],
+    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/learn" }],
+  }),
   component: () => (
     <AppShell>
       <BackBar />

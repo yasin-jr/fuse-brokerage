@@ -13,8 +13,12 @@ export const Route = createFileRoute("/portfolio")({
   head: () => ({
     meta: [
       { title: "Portfolio — FusionSynergy" },
-      { name: "description", content: "Your holdings, sector mix and live performance versus the major indices." },
+      { name: "description", content: "Your holdings, sector mix and live performance versus the major indices on FusionSynergy." },
+      { property: "og:title", content: "Portfolio — FusionSynergy" },
+      { property: "og:description", content: "Holdings, sector mix, and benchmarked performance." },
+      { property: "og:url", content: "https://fuse-brokerage.lovable.app/portfolio" },
     ],
+    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/portfolio" }],
   }),
   component: PortfolioPage,
 });
