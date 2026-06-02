@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 
 export type Quote = {
   symbol: string;
@@ -8,9 +9,10 @@ export type Quote = {
   prevClose: number;
 };
 
-// Free-tier keys provided by the project owner. Server-only file.
-const FINNHUB_KEY = "d7l8s9pr01qm7o0avm60d7l8s9pr01qm7o0avm6g";
-const FMP_KEY = "YMycIWJpTV1kFffzoRzIh5rQOkOVMrBR";
+// Server-only API keys, loaded from environment.
+const FINNHUB_KEY = process.env.FINNHUB_KEY ?? "";
+const FMP_KEY = process.env.FMP_KEY ?? "";
+
 
 const LABELS: Record<string, string> = {
   "BTC-USD": "BTC",
