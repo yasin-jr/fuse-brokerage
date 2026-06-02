@@ -78,12 +78,17 @@ async function fetchOne(symbol: string): Promise<Quote | null> {
   return (await fetchYahoo(symbol)) ?? (await fetchFinnhub(symbol));
 }
 
+const QuotesInputSchema = z.object({
+  symbols: z.array(z.string().min(1).max(20)).min(1).max(30),
+});
+
 export const getQuotes = createServerFn({ method: "GET" })
-  .inputValidator((data: { symbols: string[] }) => data)
+  .inputValidator((data) => QuotesInputSchema.parse(data))
   .handler(async ({ data }) => {
     const results = await Promise.all(data.symbols.map(fetchOne));
     return { quotes: results.filter((q): q is Quote => q !== null) };
   });
+
 
 export type Mover = { symbol: string; name: string; price: number; change: number };
 
