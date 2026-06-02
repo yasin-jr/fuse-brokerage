@@ -1,17 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { AppShell } from "@/components/AppShell";
 import { EmptyState } from "@/components/EmptyState";
-import { usePosts, savePosts, loadPosts, loadProfile, type Post } from "@/lib/profile-store";
-import { MessageSquare, Heart, Send } from "lucide-react";
-import { useState } from "react";
+import { PostComposer } from "@/components/PostComposer";
+import { listPublicPosts, toggleLike, deletePost } from "@/lib/posts.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { MessageSquare, Heart, Trash2, Plus } from "lucide-react";
 
 export const Route = createFileRoute("/discussion")({
   head: () => ({
     meta: [
       { title: "Community — FusionSynergy" },
-      { name: "description", content: "Share what you're watching, swap ideas, and see what the FusionSynergy community thinks." },
+      { name: "description", content: "Public community feed — share ideas, post photos, and see what FusionSynergy traders are watching." },
       { property: "og:title", content: "Community — FusionSynergy" },
-      { property: "og:description", content: "Discussion feed for trading ideas and market chatter." },
+      { property: "og:description", content: "Public discussion feed for trading ideas." },
       { property: "og:url", content: "https://fuse-brokerage.lovable.app/discussion" },
     ],
     links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/discussion" }],
@@ -19,8 +23,8 @@ export const Route = createFileRoute("/discussion")({
   component: DiscussionPage,
 });
 
-function timeAgo(ts: number) {
-  const s = Math.floor((Date.now() - ts) / 1000);
+function timeAgo(iso: string) {
+  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
   if (s < 60) return `${s}s`;
   if (s < 3600) return `${Math.floor(s / 60)}m`;
   if (s < 86400) return `${Math.floor(s / 3600)}h`;
@@ -28,70 +32,98 @@ function timeAgo(ts: number) {
 }
 
 function DiscussionPage() {
-  const posts = usePosts();
-  const [text, setText] = useState("");
+  const qc = useQueryClient();
+  const fetchPosts = useServerFn(listPublicPosts);
+  const like = useServerFn(toggleLike);
+  const del = useServerFn(deletePost);
 
-  const submit = () => {
-    const t = text.trim();
-    if (!t) return;
-    const profile = loadProfile();
-    const post: Post = {
-      id: Math.random().toString(36).slice(2),
-      user: profile.username || "you",
-      text: t,
-      ts: Date.now(),
-      likes: 0,
-    };
-    savePosts([post, ...loadPosts()]);
-    setText("");
-  };
+  const [userId, setUserId] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setUserId(s?.user?.id ?? null));
+    return () => sub.subscription.unsubscribe();
+  }, []);
 
-  const like = (id: string) => {
-    savePosts(loadPosts().map((p) => (p.id === id ? { ...p, likes: p.likes + 1 } : p)));
-  };
+  const { data } = useQuery({
+    queryKey: ["public-posts"],
+    queryFn: () => fetchPosts({ data: { limit: 30 } }),
+    refetchInterval: 30_000,
+  });
+  const posts = data?.posts ?? [];
+
+  // Realtime: refresh feed when posts change
+  useEffect(() => {
+    const ch = supabase
+      .channel("posts-feed")
+      .on("postgres_changes", { event: "*", schema: "public", table: "posts" }, () => {
+        qc.invalidateQueries({ queryKey: ["public-posts"] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [qc]);
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-3xl px-4 py-6 space-y-6">
-        <h1 className="text-2xl font-semibold">Community</h1>
-
-        <div className="rounded-2xl border border-border bg-secondary/40 p-3">
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Share what you're watching today…"
-            rows={2}
-            className="w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+      <div className="mx-auto max-w-3xl px-4 py-6 space-y-5">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold">Community</h1>
+          <PostComposer
+            trigger={
+              <button className="inline-flex items-center gap-1.5 rounded-full bg-fuse-gradient px-4 py-2 text-xs font-semibold text-primary-foreground shadow-glow">
+                <Plus className="h-3.5 w-3.5" /> Post something
+              </button>
+            }
           />
-          <div className="flex justify-end">
-            <button
-              onClick={submit}
-              disabled={!text.trim()}
-              className="inline-flex items-center gap-1.5 rounded-full bg-fuse-gradient px-4 py-1.5 text-xs font-semibold text-primary-foreground shadow-glow disabled:opacity-50"
-            >
-              <Send className="h-3.5 w-3.5" /> Post
-            </button>
-          </div>
         </div>
 
         {posts.length === 0 ? (
           <EmptyState
             icon={<MessageSquare className="h-6 w-6 text-muted-foreground" />}
-            title="No posts yet"
-            description="The community is brand new. Start the first conversation — talk about a stock, an idea, or a question."
+            title="The room is quiet"
+            description="Be the first to post — share a stock, an idea, or a photo."
           />
         ) : (
-          <div className="glass rounded-xl divide-y divide-border/50">
-            {posts.map((d) => (
-              <article key={d.id} className="p-4 text-sm">
-                <div className="flex items-center justify-between">
-                  <div className="text-xs text-muted-foreground">@{d.user}</div>
-                  <div className="text-xs text-muted-foreground">{timeAgo(d.ts)}</div>
-                </div>
-                <p className="mt-1.5 whitespace-pre-wrap">{d.text}</p>
-                <button onClick={() => like(d.id)} className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-rose-400">
-                  <Heart className="h-3.5 w-3.5" /> {d.likes}
-                </button>
+          <div className="space-y-3">
+            {posts.map((p) => (
+              <article key={p.id} className="glass rounded-2xl p-4">
+                <header className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">@{p.username}</span>
+                  <div className="flex items-center gap-2">
+                    {p.topic && <span className="rounded-full bg-secondary/60 px-2 py-0.5">#{p.topic}</span>}
+                    <span className="text-muted-foreground">{timeAgo(p.created_at)}</span>
+                    {userId === p.user_id && (
+                      <button
+                        onClick={() => del({ data: { post_id: p.id } }).then(() => qc.invalidateQueries({ queryKey: ["public-posts"] }))}
+                        className="text-muted-foreground hover:text-rose-400"
+                        title="Delete"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </header>
+                {p.title && <h2 className="mt-2 text-lg font-semibold">{p.title}</h2>}
+                <p className="mt-1 whitespace-pre-wrap text-sm">{p.body}</p>
+                {p.media_signed?.length > 0 && (
+                  <div className={`mt-3 grid gap-2 ${p.media_signed.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
+                    {p.media_signed.map((url, i) => (
+                      <img key={i} src={url} alt="" className="w-full rounded-lg border border-border object-cover max-h-96" />
+                    ))}
+                  </div>
+                )}
+                <footer className="mt-3">
+                  <button
+                    onClick={async () => {
+                      if (!userId) return;
+                      await like({ data: { post_id: p.id } });
+                      qc.invalidateQueries({ queryKey: ["public-posts"] });
+                    }}
+                    disabled={!userId}
+                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-rose-400 disabled:opacity-50"
+                  >
+                    <Heart className="h-3.5 w-3.5" /> {p.likes}
+                  </button>
+                </footer>
               </article>
             ))}
           </div>
