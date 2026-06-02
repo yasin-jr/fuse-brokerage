@@ -1,0 +1,120 @@
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+const CreateInput = z.object({
+  title: z.string().max(200).optional().nullable(),
+  body: z.string().trim().min(1).max(4000),
+  media_paths: z.array(z.string().min(1).max(512)).max(8).optional().default([]),
+  topic: z.string().trim().max(40).optional().nullable(),
+  visibility: z.enum(["public", "followers", "private"]).default("public"),
+});
+
+export const createPost = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => CreateInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    // Resolve a username best-effort from user metadata; falls back to email prefix
+    const { data: userInfo } = await supabase.auth.getUser();
+    const meta = (userInfo.user?.user_metadata ?? {}) as Record<string, string>;
+    const username =
+      meta.username ||
+      meta.preferred_username ||
+      meta.name ||
+      userInfo.user?.email?.split("@")[0] ||
+      "user";
+
+    const { data: row, error } = await supabase
+      .from("posts")
+      .insert({
+        user_id: userId,
+        username,
+        title: data.title ?? null,
+        body: data.body,
+        media_urls: data.media_paths ?? [],
+        topic: data.topic ?? null,
+        visibility: data.visibility,
+      })
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    return { post: row };
+  });
+
+const FeedInput = z.object({ limit: z.number().int().min(1).max(50).default(30) }).default({ limit: 30 });
+
+type FeedRow = {
+  id: string;
+  user_id: string;
+  username: string;
+  title: string | null;
+  body: string;
+  media_urls: string[];
+  topic: string | null;
+  likes: number;
+  created_at: string;
+  media_signed: string[];
+};
+
+export const listPublicPosts = createServerFn({ method: "GET" })
+  .inputValidator((d) => FeedInput.parse(d))
+  .handler(async ({ data }): Promise<{ posts: FeedRow[] }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin
+      .from("posts")
+      .select("id, user_id, username, title, body, media_urls, topic, likes, created_at")
+      .eq("visibility", "public")
+      .order("created_at", { ascending: false })
+      .limit(data.limit);
+    if (error) throw new Error(error.message);
+
+    const posts: FeedRow[] = await Promise.all(
+      (rows ?? []).map(async (r: any) => {
+        const media_signed: string[] = [];
+        for (const path of r.media_urls ?? []) {
+          const { data: signed } = await supabaseAdmin.storage
+            .from("post-media")
+            .createSignedUrl(path, 60 * 60 * 6); // 6h
+          if (signed?.signedUrl) media_signed.push(signed.signedUrl);
+        }
+        return { ...r, media_signed };
+      }),
+    );
+    return { posts };
+  });
+
+const LikeInput = z.object({ post_id: z.string().uuid() });
+
+export const toggleLike = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => LikeInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: existing } = await supabase
+      .from("post_likes")
+      .select("user_id")
+      .eq("post_id", data.post_id)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (existing) {
+      const { error } = await supabase.from("post_likes").delete().eq("post_id", data.post_id).eq("user_id", userId);
+      if (error) throw new Error(error.message);
+      return { liked: false };
+    }
+    const { error } = await supabase.from("post_likes").insert({ post_id: data.post_id, user_id: userId });
+    if (error) throw new Error(error.message);
+    return { liked: true };
+  });
+
+const DeleteInput = z.object({ post_id: z.string().uuid() });
+
+export const deletePost = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => DeleteInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { error } = await supabase.from("posts").delete().eq("id", data.post_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
