@@ -14,7 +14,7 @@ const FMP_KEY = process.env.FMP_KEY ?? "";
 
 const LABELS: Record<string, string> = {
   "BTC-USD": "BTC", "ETH-USD": "ETH", "SOL-USD": "SOL",
-  "^GSPC": "S&P 500", "^IXIC": "NASDAQ", "^DJI": "DOW", "^FTSE": "FTSE",
+  "^GSPC": "S&P 500", "^IXIC": "NASDAQ", "^DJI": "DOW", "^FTSE": "FTSE", "^RUT": "RUT",
   "GC=F": "GOLD", "CL=F": "OIL", "DX=F": "DXY",
 };
 const FINNHUB_SYMBOL: Record<string, string> = {
@@ -72,7 +72,7 @@ async function fetchOne(symbol: string): Promise<Quote | null> {
 }
 
 const QuotesInputSchema = z.object({
-  symbols: z.array(z.string().min(1).max(20)).min(1).max(50),
+  symbols: z.array(z.string().min(1).max(20)).min(1).max(100),
 });
 
 export const getQuotes = createServerFn({ method: "GET" })
@@ -86,14 +86,14 @@ export const getQuotes = createServerFn({ method: "GET" })
 
 export type Mover = { symbol: string; name: string; price: number; change: number };
 
-async function fmpList(path: string): Promise<Mover[]> {
+async function fmpList(path: string, limit: number): Promise<Mover[]> {
   if (!FMP_KEY) return [];
   try {
     const r = await fetch(`https://financialmodelingprep.com/api/v3/${path}?apikey=${FMP_KEY}`);
     if (!r.ok) return [];
     const j: any = await r.json();
     if (!Array.isArray(j)) return [];
-    return j.slice(0, 5).map((x: any) => ({
+    return j.slice(0, limit).map((x: any) => ({
       symbol: String(x.symbol ?? x.ticker ?? ""),
       name: String(x.name ?? x.companyName ?? ""),
       price: Number(x.price ?? 0),
@@ -102,14 +102,63 @@ async function fmpList(path: string): Promise<Mover[]> {
   } catch { return []; }
 }
 
-export const getMovers = createServerFn({ method: "GET" }).handler(async () => {
-  const [gainers, losers, actives] = await Promise.all([
-    fmpList("stock_market/gainers"),
-    fmpList("stock_market/losers"),
-    fmpList("stock_market/actives"),
-  ]);
-  return { gainers, losers, actives };
-});
+const MoversInput = z.object({ limit: z.number().int().min(1).max(50).default(25) }).default({ limit: 25 });
+
+export const getMovers = createServerFn({ method: "GET" })
+  .inputValidator((d) => MoversInput.parse(d))
+  .handler(async ({ data }) => {
+    const [gainers, losers, actives] = await Promise.all([
+      fmpList("stock_market/gainers", data.limit),
+      fmpList("stock_market/losers", data.limit),
+      fmpList("stock_market/actives", data.limit),
+    ]);
+    return { gainers, losers, actives };
+  });
+
+// ---------------- Largest by Market Cap ----------------
+
+export type MarketCapRow = { symbol: string; name: string; price: number; marketCap: number; change: number };
+
+const LargestInput = z.object({ limit: z.number().int().min(1).max(50).default(50) }).default({ limit: 50 });
+
+export const getLargestByMarketCap = createServerFn({ method: "GET" })
+  .inputValidator((d) => LargestInput.parse(d))
+  .handler(async ({ data }): Promise<{ rows: MarketCapRow[] }> => {
+    if (!FMP_KEY) return { rows: [] };
+    try {
+      const r = await fetch(
+        `https://financialmodelingprep.com/api/v3/stock-screener?marketCapMoreThan=100000000000&isEtf=false&country=US&limit=${data.limit}&apikey=${FMP_KEY}`,
+      );
+      if (!r.ok) return { rows: [] };
+      const j: any = await r.json();
+      if (!Array.isArray(j)) return { rows: [] };
+      const rows: MarketCapRow[] = j
+        .map((x: any) => ({
+          symbol: String(x.symbol ?? ""),
+          name: String(x.companyName ?? ""),
+          price: Number(x.price ?? 0),
+          marketCap: Number(x.marketCap ?? 0),
+          change: 0,
+        }))
+        .filter((x: MarketCapRow) => x.symbol && x.marketCap > 0)
+        .sort((a: MarketCapRow, b: MarketCapRow) => b.marketCap - a.marketCap)
+        .slice(0, data.limit);
+
+      // Enrich with daily change via batched quotes (50 max per call)
+      const syms = rows.map((r) => r.symbol).join(",");
+      if (syms) {
+        try {
+          const qr = await fetch(`https://financialmodelingprep.com/api/v3/quote/${syms}?apikey=${FMP_KEY}`);
+          if (qr.ok) {
+            const qj: any[] = await qr.json();
+            const m = new Map(qj.map((x: any) => [String(x.symbol), Number(x.changesPercentage ?? 0)]));
+            for (const row of rows) row.change = m.get(row.symbol) ?? 0;
+          }
+        } catch {}
+      }
+      return { rows };
+    } catch { return { rows: [] }; }
+  });
 
 // ---------------- Candles ----------------
 
@@ -122,7 +171,6 @@ const CandlesInput = z.object({
 });
 
 function rangeToParams(range: Range) {
-  // Returns { interval, from, to } compatible with Yahoo
   const now = new Date();
   const to = Math.floor(now.getTime() / 1000);
   let from = to;
@@ -169,6 +217,58 @@ export const getCandles = createServerFn({ method: "GET" })
   .inputValidator((data) => CandlesInput.parse(data))
   .handler(async ({ data }) => ({ candles: await fetchYahooCandles(data.symbol, data.range as Range) }));
 
+// ---------------- Portfolio history ----------------
+
+export type PortfolioPoint = { t: number; v: number };
+
+const PortfolioHistoryInput = z.object({
+  positions: z.array(z.object({ symbol: z.string().min(1).max(20), shares: z.number() })).max(50),
+  cash: z.number().min(0),
+  range: z.enum(["1D", "1W", "1M", "3M", "6M", "1Y", "10Y", "YTD", "ALL"]),
+});
+
+export const getPortfolioHistory = createServerFn({ method: "POST" })
+  .inputValidator((d) => PortfolioHistoryInput.parse(d))
+  .handler(async ({ data }): Promise<{ points: PortfolioPoint[] }> => {
+    if (data.positions.length === 0) {
+      // Flat line at cash value
+      const now = Date.now();
+      return { points: [{ t: now - 86400_000, v: data.cash }, { t: now, v: data.cash }] };
+    }
+    const all = await Promise.all(
+      data.positions.map(async (p) => ({
+        shares: p.shares,
+        candles: await fetchYahooCandles(p.symbol, data.range as Range),
+      })),
+    );
+    // Build union of timestamps (intersect by index ~ same range often aligns)
+    const tsSet = new Set<number>();
+    for (const x of all) for (const c of x.candles) tsSet.add(c.t);
+    const tsArr = [...tsSet].sort((a, b) => a - b);
+    if (!tsArr.length) {
+      const now = Date.now();
+      return { points: [{ t: now - 86400_000, v: data.cash }, { t: now, v: data.cash }] };
+    }
+    // Pre-index per holding for fast lookup with forward-fill
+    const indexed = all.map((x) => {
+      const m = new Map<number, number>();
+      for (const c of x.candles) m.set(c.t, c.c);
+      return { shares: x.shares, map: m };
+    });
+    const points: PortfolioPoint[] = [];
+    const lastPrice = new Array(indexed.length).fill(0);
+    for (const t of tsArr) {
+      let val = data.cash;
+      for (let i = 0; i < indexed.length; i++) {
+        const p = indexed[i].map.get(t);
+        if (p != null) lastPrice[i] = p;
+        val += (lastPrice[i] || 0) * indexed[i].shares;
+      }
+      points.push({ t, v: val });
+    }
+    return { points };
+  });
+
 // ---------------- Profile + key stats ----------------
 
 export type CompanyStats = {
@@ -188,6 +288,11 @@ export type CompanyStats = {
   price: number;
   change: number;
   changePct: number;
+  description: string;
+  ceo: string;
+  beta: number;
+  high52: number;
+  low52: number;
 };
 
 const SymbolInput = z.object({ symbol: z.string().min(1).max(20) });
@@ -223,6 +328,11 @@ export const getCompanyStats = createServerFn({ method: "GET" })
         price: Number(q?.price ?? 0),
         change: Number(q?.change ?? 0),
         changePct: Number(q?.changesPercentage ?? 0),
+        description: String(p?.description ?? ""),
+        ceo: String(p?.ceo ?? ""),
+        beta: Number(p?.beta ?? 0),
+        high52: Number(q?.yearHigh ?? p?.range?.split("-")?.[1] ?? 0),
+        low52: Number(q?.yearLow ?? p?.range?.split("-")?.[0] ?? 0),
       };
       return { stats };
     } catch { return { stats: null }; }
