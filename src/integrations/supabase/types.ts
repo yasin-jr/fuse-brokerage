@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      post_comments: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_likes: {
         Row: {
           created_at: string
@@ -47,6 +82,7 @@ export type Database = {
           id: string
           likes: number
           media_urls: string[]
+          tickers: string[]
           title: string | null
           topic: string | null
           user_id: string
@@ -59,6 +95,7 @@ export type Database = {
           id?: string
           likes?: number
           media_urls?: string[]
+          tickers?: string[]
           title?: string | null
           topic?: string | null
           user_id: string
@@ -71,6 +108,7 @@ export type Database = {
           id?: string
           likes?: number
           media_urls?: string[]
+          tickers?: string[]
           title?: string | null
           topic?: string | null
           user_id?: string
