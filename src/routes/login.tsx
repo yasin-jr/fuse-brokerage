@@ -134,43 +134,7 @@ function LoginPage() {
           </p>
         </div>
 
-        {step === "verify" ? (
-          <form onSubmit={onVerify} className="mt-8 space-y-4">
-            <div className="text-center">
-              <h2 className="text-lg font-semibold">Verify your email</h2>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Enter the 6-digit code sent to <span className="text-foreground">{email}</span>
-              </p>
-            </div>
-            <Field
-              icon={KeyRound}
-              placeholder="••••••"
-              value={code}
-              onChange={(v) => setCode(v.replace(/\D/g, "").slice(0, 6))}
-              required
-              minLength={6}
-            />
-            <button
-              type="submit"
-              disabled={!!busy}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-fuse-gradient py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50"
-            >
-              {busy === "verify" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Verify & continue
-            </button>
-            <div className="flex items-center justify-between text-xs">
-              <button type="button" onClick={() => { setStep("form"); setMsg(null); setCode(""); }} className="text-muted-foreground hover:text-foreground">
-                ← Use a different email
-              </button>
-              <button type="button" onClick={resend} disabled={!!busy} className="font-semibold text-foreground hover:underline disabled:opacity-50">
-                {busy === "resend" ? "Sending…" : "Resend code"}
-              </button>
-            </div>
-            {msg && (
-              <p className={`text-center text-xs ${msg.type === "err" ? "text-rose-400" : "text-emerald-400"}`}>{msg.text}</p>
-            )}
-          </form>
-        ) : (
+        {false ? null : (
           <>
             <p className="mt-5 text-center text-xs text-muted-foreground">
               {mode === "signin" ? "Welcome back. Sign in to continue." : "Create your account to start trading."}
