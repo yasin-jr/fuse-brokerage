@@ -130,67 +130,66 @@ function LoginPage() {
           </p>
         </div>
 
-        <>
-            <p className="mt-5 text-center text-xs text-muted-foreground">
-              {mode === "signin" ? "Welcome back. Sign in to continue." : "Create your account to start trading."}
-            </p>
+        <p className="mt-5 text-center text-xs text-muted-foreground">
+          {mode === "signin" ? "Welcome back. Sign in to continue." : "Create your account to start trading."}
+        </p>
 
-            <div className="mt-5 space-y-2.5">
-              <button onClick={() => oauth("google")} disabled={!!busy}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-secondary/40 py-2.5 text-sm font-medium hover:bg-secondary disabled:opacity-50">
-                {busy === "google" ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                Continue with Google
-              </button>
-              <button onClick={() => oauth("apple")} disabled={!!busy}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-foreground py-2.5 text-sm font-medium text-background hover:opacity-90 disabled:opacity-50">
-                {busy === "apple" ? <Loader2 className="h-4 w-4 animate-spin" /> : <AppleIcon />}
-                Continue with Apple
-              </button>
-              <button
-                type="button"
-                onClick={() => setMsg({ type: "err", text: "Microsoft sign-in is rolling out soon — use Google, Apple, or email for now." })}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-secondary/20 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary/40">
-                <MicrosoftIcon />
-                Continue with Microsoft
-                <span className="ml-1 rounded-full bg-secondary px-1.5 py-0.5 text-[9px] uppercase tracking-wide">Soon</span>
-              </button>
-            </div>
+        <div className="mt-5 space-y-2.5">
+          <button onClick={() => oauth("google")} disabled={!!busy}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-secondary/40 py-2.5 text-sm font-medium hover:bg-secondary disabled:opacity-50">
+            {busy === "google" ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
+            Continue with Google
+          </button>
+          <button onClick={() => oauth("apple")} disabled={!!busy}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-foreground py-2.5 text-sm font-medium text-background hover:opacity-90 disabled:opacity-50">
+            {busy === "apple" ? <Loader2 className="h-4 w-4 animate-spin" /> : <AppleIcon />}
+            Continue with Apple
+          </button>
+          <button
+            type="button"
+            onClick={() => setMsg({ type: "err", text: "Microsoft sign-in is rolling out soon — use Google, Apple, or email for now." })}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-secondary/20 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary/40">
+            <MicrosoftIcon />
+            Continue with Microsoft
+            <span className="ml-1 rounded-full bg-secondary px-1.5 py-0.5 text-[9px] uppercase tracking-wide">Soon</span>
+          </button>
+        </div>
 
-            <div className="my-5 flex items-center gap-3 text-[10px] uppercase tracking-wider text-muted-foreground">
-              <span className="h-px flex-1 bg-border" /> or {mode === "signin" ? "sign in with email" : "use email"}
-              <span className="h-px flex-1 bg-border" />
-            </div>
+        <div className="my-5 flex items-center gap-3 text-[10px] uppercase tracking-wider text-muted-foreground">
+          <span className="h-px flex-1 bg-border" /> or {mode === "signin" ? "sign in with email" : "use email"}
+          <span className="h-px flex-1 bg-border" />
+        </div>
 
-            <form onSubmit={onEmail} className="space-y-2.5">
-              {mode === "signup" && (
-                <>
-                  <Field icon={User} placeholder="Username" value={username} onChange={setUsername} required />
-                  <Field icon={Mail} type="email" placeholder="you@email.com" value={email} onChange={setEmail} required />
-                </>
-              )}
-              {mode === "signin" && (
-                <Field icon={Mail} placeholder="Email or username" value={identifier} onChange={setIdentifier} required />
-              )}
-              <Field icon={Lock} type="password" placeholder="Password" value={password} onChange={setPassword} required minLength={6} />
-              <button type="submit" disabled={!!busy}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-fuse-gradient py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50">
-                {busy === "email" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                {mode === "signin" ? "Sign in" : "Create account"}
-              </button>
-            </form>
+        <form onSubmit={onEmail} className="space-y-2.5">
+          {mode === "signup" && (
+            <>
+              <Field icon={User} placeholder="Username" value={username} onChange={setUsername} required />
+              <Field icon={Mail} type="email" placeholder="you@email.com" value={email} onChange={setEmail} required />
+            </>
+          )}
+          {mode === "signin" && (
+            <Field icon={Mail} placeholder="Email or username" value={identifier} onChange={setIdentifier} required />
+          )}
+          <Field icon={Lock} type="password" placeholder="Password" value={password} onChange={setPassword} required minLength={6} />
+          <button type="submit" disabled={!!busy}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-fuse-gradient py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50">
+            {busy === "email" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            {mode === "signin" ? "Sign in" : "Create account"}
+          </button>
+        </form>
 
-            {msg && (
-              <p className={`mt-3 text-center text-xs ${msg.type === "err" ? "text-rose-400" : "text-emerald-400"}`}>{msg.text}</p>
-            )}
+        {msg && (
+          <p className={`mt-3 text-center text-xs ${msg.type === "err" ? "text-rose-400" : "text-emerald-400"}`}>{msg.text}</p>
+        )}
 
-            <p className="mt-5 text-center text-xs text-muted-foreground">
-              {mode === "signin" ? "New here?" : "Already have an account?"}{" "}
-              <button onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMsg(null); }}
-                className="font-semibold text-foreground underline-offset-2 hover:underline">
-                {mode === "signin" ? "Create account" : "Sign in"}
-              </button>
-            </p>
-        </>
+        <p className="mt-5 text-center text-xs text-muted-foreground">
+          {mode === "signin" ? "New here?" : "Already have an account?"}{" "}
+          <button onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMsg(null); }}
+            className="font-semibold text-foreground underline-offset-2 hover:underline">
+            {mode === "signin" ? "Create account" : "Sign in"}
+          </button>
+        </p>
+
 
         <p className="mt-auto pt-8 text-center text-[10px] text-muted-foreground">
           By continuing, you agree to FusionSynergy's Terms & Privacy.
