@@ -70,6 +70,7 @@ function LoginPage() {
       if (mode === "signup") {
         if (!username.trim() || username.length < 3) throw new Error("Username must be at least 3 characters.");
         if (!/^[a-zA-Z0-9_]+$/.test(username)) throw new Error("Username can only contain letters, numbers, and _");
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter a valid email address.");
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -79,11 +80,15 @@ function LoginPage() {
           },
         });
         if (error) throw error;
-        // Persist locally so this account is permanent on this device & sign-in by username works.
         const p = loadProfile();
         saveProfile({ ...p, username, email });
-        setStep("verify");
-        setMsg({ type: "ok", text: `We sent a 6-digit code to ${email}. Enter it below.` });
+        // Auto-confirm is enabled — try to sign in immediately so we route forward.
+        const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInErr) {
+          setMsg({ type: "ok", text: "Account created. Sign in to continue." });
+          setMode("signin");
+          setIdentifier(email);
+        }
       } else {
         let loginEmail = identifier.trim();
         if (!loginEmail.includes("@")) {
@@ -92,49 +97,10 @@ function LoginPage() {
           loginEmail = found;
         }
         const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
-        if (error) {
-          if (/confirm/i.test(error.message)) {
-            setEmail(loginEmail);
-            setStep("verify");
-            setMsg({ type: "ok", text: "Your email isn't verified yet. We just sent a new 6-digit code." });
-            await supabase.auth.resend({ type: "signup", email: loginEmail });
-            return;
-          }
-          throw error;
-        }
+        if (error) throw error;
       }
     } catch (err: any) {
       setMsg({ type: "err", text: err?.message || "Something went wrong." });
-    } finally {
-      setBusy("");
-    }
-  };
-
-  const onVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setBusy("verify");
-    setMsg(null);
-    try {
-      if (code.length !== 6) throw new Error("Enter the 6-digit code from your email.");
-      const { error } = await supabase.auth.verifyOtp({ email, token: code, type: "signup" });
-      if (error) throw error;
-      // onAuthStateChange will route forward.
-    } catch (err: any) {
-      setMsg({ type: "err", text: err?.message || "Invalid or expired code." });
-    } finally {
-      setBusy("");
-    }
-  };
-
-  const resend = async () => {
-    setBusy("resend");
-    setMsg(null);
-    try {
-      const { error } = await supabase.auth.resend({ type: "signup", email });
-      if (error) throw error;
-      setMsg({ type: "ok", text: "New code sent. Check your inbox." });
-    } catch (err: any) {
-      setMsg({ type: "err", text: err?.message || "Could not resend." });
     } finally {
       setBusy("");
     }
