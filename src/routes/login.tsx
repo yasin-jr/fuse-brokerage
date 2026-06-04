@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Logo } from "@/components/Logo";
 import { loadProfile, saveProfile, lookupEmailByUsername } from "@/lib/profile-store";
-import { Mail, Lock, Loader2, User, KeyRound } from "lucide-react";
+import { Mail, Lock, Loader2, User } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -20,18 +20,14 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
-type Step = "form" | "verify";
-
 function LoginPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [step, setStep] = useState<Step>("form");
   const [identifier, setIdentifier] = useState("");
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [code, setCode] = useState("");
-  const [busy, setBusy] = useState<"" | "email" | "google" | "apple" | "microsoft" | "verify" | "resend">("");
+  const [busy, setBusy] = useState<"" | "email" | "google" | "apple" | "microsoft">("");
   const [msg, setMsg] = useState<{ type: "err" | "ok"; text: string } | null>(null);
 
   useEffect(() => {
