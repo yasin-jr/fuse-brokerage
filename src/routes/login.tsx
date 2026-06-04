@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Logo } from "@/components/Logo";
 import { loadProfile, saveProfile, lookupEmailByUsername } from "@/lib/profile-store";
-import { Mail, Lock, Loader2, User, KeyRound } from "lucide-react";
+import { Mail, Lock, Loader2, User } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -20,18 +20,14 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
-type Step = "form" | "verify";
-
 function LoginPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [step, setStep] = useState<Step>("form");
   const [identifier, setIdentifier] = useState("");
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [code, setCode] = useState("");
-  const [busy, setBusy] = useState<"" | "email" | "google" | "apple" | "microsoft" | "verify" | "resend">("");
+  const [busy, setBusy] = useState<"" | "email" | "google" | "apple" | "microsoft">("");
   const [msg, setMsg] = useState<{ type: "err" | "ok"; text: string } | null>(null);
 
   useEffect(() => {
@@ -70,6 +66,7 @@ function LoginPage() {
       if (mode === "signup") {
         if (!username.trim() || username.length < 3) throw new Error("Username must be at least 3 characters.");
         if (!/^[a-zA-Z0-9_]+$/.test(username)) throw new Error("Username can only contain letters, numbers, and _");
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter a valid email address.");
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -79,11 +76,15 @@ function LoginPage() {
           },
         });
         if (error) throw error;
-        // Persist locally so this account is permanent on this device & sign-in by username works.
         const p = loadProfile();
         saveProfile({ ...p, username, email });
-        setStep("verify");
-        setMsg({ type: "ok", text: `We sent a 6-digit code to ${email}. Enter it below.` });
+        // Auto-confirm is enabled — try to sign in immediately so we route forward.
+        const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInErr) {
+          setMsg({ type: "ok", text: "Account created. Sign in to continue." });
+          setMode("signin");
+          setIdentifier(email);
+        }
       } else {
         let loginEmail = identifier.trim();
         if (!loginEmail.includes("@")) {
@@ -92,49 +93,10 @@ function LoginPage() {
           loginEmail = found;
         }
         const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
-        if (error) {
-          if (/confirm/i.test(error.message)) {
-            setEmail(loginEmail);
-            setStep("verify");
-            setMsg({ type: "ok", text: "Your email isn't verified yet. We just sent a new 6-digit code." });
-            await supabase.auth.resend({ type: "signup", email: loginEmail });
-            return;
-          }
-          throw error;
-        }
+        if (error) throw error;
       }
     } catch (err: any) {
       setMsg({ type: "err", text: err?.message || "Something went wrong." });
-    } finally {
-      setBusy("");
-    }
-  };
-
-  const onVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setBusy("verify");
-    setMsg(null);
-    try {
-      if (code.length !== 6) throw new Error("Enter the 6-digit code from your email.");
-      const { error } = await supabase.auth.verifyOtp({ email, token: code, type: "signup" });
-      if (error) throw error;
-      // onAuthStateChange will route forward.
-    } catch (err: any) {
-      setMsg({ type: "err", text: err?.message || "Invalid or expired code." });
-    } finally {
-      setBusy("");
-    }
-  };
-
-  const resend = async () => {
-    setBusy("resend");
-    setMsg(null);
-    try {
-      const { error } = await supabase.auth.resend({ type: "signup", email });
-      if (error) throw error;
-      setMsg({ type: "ok", text: "New code sent. Check your inbox." });
-    } catch (err: any) {
-      setMsg({ type: "err", text: err?.message || "Could not resend." });
     } finally {
       setBusy("");
     }
@@ -168,44 +130,7 @@ function LoginPage() {
           </p>
         </div>
 
-        {step === "verify" ? (
-          <form onSubmit={onVerify} className="mt-8 space-y-4">
-            <div className="text-center">
-              <h2 className="text-lg font-semibold">Verify your email</h2>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Enter the 6-digit code sent to <span className="text-foreground">{email}</span>
-              </p>
-            </div>
-            <Field
-              icon={KeyRound}
-              placeholder="••••••"
-              value={code}
-              onChange={(v) => setCode(v.replace(/\D/g, "").slice(0, 6))}
-              required
-              minLength={6}
-            />
-            <button
-              type="submit"
-              disabled={!!busy}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-fuse-gradient py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50"
-            >
-              {busy === "verify" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Verify & continue
-            </button>
-            <div className="flex items-center justify-between text-xs">
-              <button type="button" onClick={() => { setStep("form"); setMsg(null); setCode(""); }} className="text-muted-foreground hover:text-foreground">
-                ← Use a different email
-              </button>
-              <button type="button" onClick={resend} disabled={!!busy} className="font-semibold text-foreground hover:underline disabled:opacity-50">
-                {busy === "resend" ? "Sending…" : "Resend code"}
-              </button>
-            </div>
-            {msg && (
-              <p className={`text-center text-xs ${msg.type === "err" ? "text-rose-400" : "text-emerald-400"}`}>{msg.text}</p>
-            )}
-          </form>
-        ) : (
-          <>
+        <>
             <p className="mt-5 text-center text-xs text-muted-foreground">
               {mode === "signin" ? "Welcome back. Sign in to continue." : "Create your account to start trading."}
             </p>
@@ -265,8 +190,7 @@ function LoginPage() {
                 {mode === "signin" ? "Create account" : "Sign in"}
               </button>
             </p>
-          </>
-        )}
+        </>
 
         <p className="mt-auto pt-8 text-center text-[10px] text-muted-foreground">
           By continuing, you agree to FusionSynergy's Terms & Privacy.

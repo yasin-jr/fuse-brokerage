@@ -4,7 +4,7 @@ import { AppShell } from "@/components/AppShell";
 import { BackBar } from "@/components/BackBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
-import { useProfile, saveProfile, loadProfile, clearAccountData } from "@/lib/profile-store";
+import { useProfile, saveProfile, loadProfile, clearAccountData, restartAccount } from "@/lib/profile-store";
 import { X, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
@@ -109,6 +109,7 @@ function SettingsPage() {
         <section>
           <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Danger</h2>
           <div className="glass rounded-xl divide-y divide-border/50">
+            <Row label="Restart account" value="Keep login, reset trading" onClick={() => { restartAccount(); navigate({ to: "/onboarding/difficulty" }); }} />
             <Row label="Reset account" onClick={() => setConfirmReset(true)} />
             <Row label="Sign out" onClick={signOut} />
           </div>

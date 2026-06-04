@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { loadProfile } from "@/lib/profile-store";
@@ -8,7 +8,6 @@ const PUBLIC = ["/login", "/onboarding/difficulty"];
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -22,7 +21,6 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
         const p = loadProfile();
         if (!p.difficulty) navigate({ to: "/onboarding/difficulty" });
       }
-      setReady(true);
     };
     check();
     const { data: sub } = supabase.auth.onAuthStateChange(() => check());
@@ -32,6 +30,6 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     };
   }, [path, navigate]);
 
-  if (!ready) return <div className="min-h-screen bg-background" />;
+  // Render children immediately — no blank-screen gate. Redirects happen async.
   return <>{children}</>;
 }
