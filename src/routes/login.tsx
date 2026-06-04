@@ -190,7 +190,6 @@ function LoginPage() {
                 {mode === "signin" ? "Create account" : "Sign in"}
               </button>
             </p>
-          </>
         </>
 
         <p className="mt-auto pt-8 text-center text-[10px] text-muted-foreground">
