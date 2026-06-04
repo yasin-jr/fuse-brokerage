@@ -131,7 +131,6 @@ function LoginPage() {
         </div>
 
         <>
-          <></>
             <p className="mt-5 text-center text-xs text-muted-foreground">
               {mode === "signin" ? "Welcome back. Sign in to continue." : "Create your account to start trading."}
             </p>
