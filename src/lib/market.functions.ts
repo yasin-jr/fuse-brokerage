@@ -303,7 +303,7 @@ export const getPortfolioHistory = createServerFn({ method: "POST" })
     const all = await Promise.all(
       data.positions.map(async (p) => ({
         shares: p.shares,
-        candles: await fetchYahooCandles(p.symbol, data.range as Range),
+        candles: await fetchCandlesAny(p.symbol, data.range as Range),
       })),
     );
     // Build union of timestamps (intersect by index ~ same range often aligns)
