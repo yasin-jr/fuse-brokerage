@@ -68,7 +68,8 @@ async function fetchFmpQuote(symbol: string): Promise<Quote | null> {
 }
 
 async function fetchOne(symbol: string): Promise<Quote | null> {
-  return (await fetchYahoo(symbol)) ?? (await fetchFmpQuote(symbol)) ?? (await fetchFinnhub(symbol));
+  // Prefer FMP (user's key, edge-friendly), then Finnhub, then Yahoo.
+  return (await fetchFmpQuote(symbol)) ?? (await fetchFinnhub(symbol)) ?? (await fetchYahoo(symbol));
 }
 
 const QuotesInputSchema = z.object({
