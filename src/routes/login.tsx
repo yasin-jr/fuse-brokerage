@@ -192,7 +192,7 @@ function LoginPage() {
               </button>
             </p>
           </>
-        )}
+        </>
 
         <p className="mt-auto pt-8 text-center text-[10px] text-muted-foreground">
           By continuing, you agree to FusionSynergy's Terms & Privacy.
