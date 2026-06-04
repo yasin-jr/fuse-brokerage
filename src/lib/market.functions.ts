@@ -68,7 +68,8 @@ async function fetchFmpQuote(symbol: string): Promise<Quote | null> {
 }
 
 async function fetchOne(symbol: string): Promise<Quote | null> {
-  return (await fetchYahoo(symbol)) ?? (await fetchFmpQuote(symbol)) ?? (await fetchFinnhub(symbol));
+  // Prefer FMP (user's key, edge-friendly), then Finnhub, then Yahoo.
+  return (await fetchFmpQuote(symbol)) ?? (await fetchFinnhub(symbol)) ?? (await fetchYahoo(symbol));
 }
 
 const QuotesInputSchema = z.object({
@@ -193,29 +194,93 @@ async function fetchYahooCandles(symbol: string, range: Range): Promise<Candle[]
   const { interval, from, to } = rangeToParams(range);
   const periodPart = from > 0 ? `period1=${from}&period2=${to}` : `range=max`;
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=${interval}&${periodPart}`;
-  const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 (compatible; FusionSynergy/1.0)" } });
-  if (!r.ok) return [];
-  const j: any = await r.json();
-  const result = j?.chart?.result?.[0];
-  if (!result) return [];
-  const ts: number[] = result.timestamp ?? [];
-  const q = result.indicators?.quote?.[0] ?? {};
-  const out: Candle[] = [];
-  for (let i = 0; i < ts.length; i++) {
-    const c = q.close?.[i];
-    if (c == null) continue;
-    out.push({
-      t: ts[i] * 1000,
-      o: q.open?.[i] ?? c, h: q.high?.[i] ?? c, l: q.low?.[i] ?? c, c,
-      v: q.volume?.[i] ?? 0,
-    });
+  try {
+    const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 (compatible; FusionSynergy/1.0)" } });
+    if (!r.ok) return [];
+    const j: any = await r.json();
+    const result = j?.chart?.result?.[0];
+    if (!result) return [];
+    const ts: number[] = result.timestamp ?? [];
+    const q = result.indicators?.quote?.[0] ?? {};
+    const out: Candle[] = [];
+    for (let i = 0; i < ts.length; i++) {
+      const c = q.close?.[i];
+      if (c == null) continue;
+      out.push({
+        t: ts[i] * 1000,
+        o: q.open?.[i] ?? c, h: q.high?.[i] ?? c, l: q.low?.[i] ?? c, c,
+        v: q.volume?.[i] ?? 0,
+      });
+    }
+    return out;
+  } catch { return []; }
+}
+
+function fmpIntradayInterval(range: Range): string | null {
+  switch (range) {
+    case "1D": return "5min";
+    case "1W": return "30min";
+    default: return null;
   }
-  return out;
+}
+
+async function fetchFmpCandles(symbol: string, range: Range): Promise<Candle[]> {
+  if (!FMP_KEY) return [];
+  try {
+    const intra = fmpIntradayInterval(range);
+    if (intra) {
+      const r = await fetch(
+        `https://financialmodelingprep.com/api/v3/historical-chart/${intra}/${encodeURIComponent(symbol)}?apikey=${FMP_KEY}`,
+      );
+      if (!r.ok) return [];
+      const j: any = await r.json();
+      if (!Array.isArray(j)) return [];
+      const cutoff = Date.now() - (range === "1D" ? 86400_000 * 2 : 8 * 86400_000);
+      return j
+        .map((x: any) => ({
+          t: new Date(String(x.date).replace(" ", "T") + "Z").getTime(),
+          o: Number(x.open), h: Number(x.high), l: Number(x.low), c: Number(x.close), v: Number(x.volume ?? 0),
+        }))
+        .filter((c: Candle) => Number.isFinite(c.c) && c.t >= cutoff)
+        .sort((a: Candle, b: Candle) => a.t - b.t);
+    }
+    const now = new Date();
+    let fromDate = new Date(0);
+    switch (range) {
+      case "1M": fromDate = new Date(now.getTime() - 31 * 86400_000); break;
+      case "3M": fromDate = new Date(now.getTime() - 93 * 86400_000); break;
+      case "6M": fromDate = new Date(now.getTime() - 186 * 86400_000); break;
+      case "1Y": fromDate = new Date(now.getTime() - 365 * 86400_000); break;
+      case "10Y": fromDate = new Date(now.getTime() - 365 * 10 * 86400_000); break;
+      case "YTD": fromDate = new Date(now.getFullYear(), 0, 1); break;
+      case "ALL": fromDate = new Date(1995, 0, 1); break;
+    }
+    const iso = (d: Date) => d.toISOString().slice(0, 10);
+    const r = await fetch(
+      `https://financialmodelingprep.com/api/v3/historical-price-full/${encodeURIComponent(symbol)}?from=${iso(fromDate)}&to=${iso(now)}&apikey=${FMP_KEY}`,
+    );
+    if (!r.ok) return [];
+    const j: any = await r.json();
+    const hist: any[] = Array.isArray(j?.historical) ? j.historical : [];
+    return hist
+      .map((x: any) => ({
+        t: new Date(x.date + "T00:00:00Z").getTime(),
+        o: Number(x.open), h: Number(x.high), l: Number(x.low), c: Number(x.close), v: Number(x.volume ?? 0),
+      }))
+      .filter((c: Candle) => Number.isFinite(c.c))
+      .sort((a: Candle, b: Candle) => a.t - b.t);
+  } catch { return []; }
+}
+
+async function fetchCandlesAny(symbol: string, range: Range): Promise<Candle[]> {
+  const fmp = await fetchFmpCandles(symbol, range);
+  if (fmp.length > 1) return fmp;
+  return fetchYahooCandles(symbol, range);
 }
 
 export const getCandles = createServerFn({ method: "GET" })
   .inputValidator((data) => CandlesInput.parse(data))
-  .handler(async ({ data }) => ({ candles: await fetchYahooCandles(data.symbol, data.range as Range) }));
+  .handler(async ({ data }) => ({ candles: await fetchCandlesAny(data.symbol, data.range as Range) }));
 
 // ---------------- Portfolio history ----------------
 
@@ -238,7 +303,7 @@ export const getPortfolioHistory = createServerFn({ method: "POST" })
     const all = await Promise.all(
       data.positions.map(async (p) => ({
         shares: p.shares,
-        candles: await fetchYahooCandles(p.symbol, data.range as Range),
+        candles: await fetchCandlesAny(p.symbol, data.range as Range),
       })),
     );
     // Build union of timestamps (intersect by index ~ same range often aligns)
