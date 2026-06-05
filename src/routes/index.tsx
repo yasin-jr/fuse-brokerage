@@ -8,7 +8,7 @@ import { TrendingStocks } from "@/components/TrendingStocks";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { PILLARS, PORTFOLIO, RECENT_ORDERS } from "@/lib/mock-data";
 import { usePosts } from "@/lib/profile-store";
-import { Sparkles, ArrowRight, MessageSquare, Receipt, Wallet, TrendingUp, Settings as SettingsIcon } from "lucide-react";
+import { Sparkles, ArrowRight, MessageSquare, Receipt, TrendingUp, Settings as SettingsIcon } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -191,19 +191,6 @@ function HomePage() {
           )}
         </Section>
 
-        {/* Cash card if no portfolio */}
-        {!hasPortfolio && (
-          <div className="glass flex items-center gap-3 rounded-2xl p-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-fuse-gradient">
-              <Wallet className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div className="flex-1">
-              <div className="text-xs text-muted-foreground">Practice cash</div>
-              <div className="text-sm font-semibold">$0.00 — claim your starter balance</div>
-            </div>
-            <Link to="/settings" className="text-xs text-fuse-cyan">Setup →</Link>
-          </div>
-        )}
 
         {/* Community */}
         <Section title="Community" link={{ to: "/discussion", label: "Open" }}>

@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { useProfile } from "@/lib/profile-store";
 import { getQuotes } from "@/lib/market.functions";
 import { LOGO_URL } from "@/lib/catalog";
+import { PortfolioChart } from "@/components/PortfolioChart";
 import { PieChart, Trophy } from "lucide-react";
 
 export const Route = createFileRoute("/portfolio")({
@@ -24,8 +25,8 @@ export const Route = createFileRoute("/portfolio")({
   component: PortfolioPage,
 });
 
-const INDEX_SYMBOLS = ["^IXIC", "^GSPC", "^DJI", "^RUT"];
-const INDEX_NAMES: Record<string, string> = { "^IXIC": "NASDAQ", "^GSPC": "S&P 500", "^DJI": "DOW", "^RUT": "RUT" };
+const INDEX_SYMBOLS = ["^IXIC", "^GSPC", "^DJI", "BTC-USD"];
+const INDEX_NAMES: Record<string, string> = { "^IXIC": "NASDAQ", "^GSPC": "S&P 500", "^DJI": "DOW", "BTC-USD": "BTC" };
 
 function PortfolioPage() {
   const profile = useProfile();
@@ -124,6 +125,14 @@ function PortfolioPage() {
               <div className="mt-1 text-[10px] text-muted-foreground">+{multiplier} pt / 1% gain on sell</div>
             </div>
           </section>
+        )}
+
+        {/* Portfolio chart */}
+        {claimed && (
+          <PortfolioChart
+            positions={positions.map((p) => ({ symbol: p.symbol, shares: p.shares }))}
+            cash={cash}
+          />
         )}
 
         {/* Holdings */}

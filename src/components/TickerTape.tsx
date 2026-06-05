@@ -21,8 +21,8 @@ export function TickerTape() {
   const { data } = useQuery({
     queryKey: ["ticker-tape", SYMBOLS],
     queryFn: () => fetchQuotes({ data: { symbols: SYMBOLS } }),
-    refetchInterval: 30_000,
-    staleTime: 15_000,
+    refetchInterval: 8_000,
+    staleTime: 4_000,
   });
 
   const quotes = data?.quotes?.length ? data.quotes : FALLBACK;
@@ -31,18 +31,24 @@ export function TickerTape() {
   return (
     <div className="relative overflow-hidden border-y border-border/60 bg-background/40 py-2">
       <div className="flex w-max animate-ticker gap-8 whitespace-nowrap font-mono text-[11px] tracking-wider">
-        {items.map((t, i) => (
-          <span key={i} className="flex items-center gap-2 text-muted-foreground">
-            <span className="text-foreground/90">{t.label}</span>
-            <span>{t.price ? `$${fmt(t.price)}` : "—"}</span>
-            {t.price > 0 && (
-              <span className={t.change >= 0 ? "text-emerald-400" : "text-rose-400"}>
-                {t.change >= 0 ? "▲" : "▼"} {Math.abs(t.change).toFixed(2)}%
-              </span>
-            )}
-            <span className="text-border">·</span>
-          </span>
-        ))}
+        {items.map((t, i) => {
+          const neutral = Math.abs(t.change) < 0.005;
+          const cls = neutral ? "text-muted-foreground" : t.change >= 0 ? "text-emerald-400" : "text-rose-400";
+          const arrow = neutral ? "•" : t.change >= 0 ? "▲" : "▼";
+          const delta = t.price && t.prevClose ? t.price - t.prevClose : 0;
+          return (
+            <span key={i} className="flex items-center gap-2 text-muted-foreground">
+              <span className="text-foreground/90">{t.label}</span>
+              <span>{t.price ? `$${fmt(t.price)}` : "—"}</span>
+              {t.price > 0 && (
+                <span className={cls}>
+                  {arrow} {delta >= 0 ? "+" : ""}${Math.abs(delta).toFixed(2)} ({Math.abs(t.change).toFixed(2)}%)
+                </span>
+              )}
+              <span className="text-border">·</span>
+            </span>
+          );
+        })}
       </div>
     </div>
   );
