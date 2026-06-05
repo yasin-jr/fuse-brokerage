@@ -8,7 +8,7 @@ import { TrendingStocks } from "@/components/TrendingStocks";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { PILLARS, PORTFOLIO, RECENT_ORDERS } from "@/lib/mock-data";
 import { usePosts } from "@/lib/profile-store";
-import { Sparkles, ArrowRight, MessageSquare, Receipt, Wallet, TrendingUp, Settings as SettingsIcon } from "lucide-react";
+import { Sparkles, ArrowRight, MessageSquare, Receipt, TrendingUp, Settings as SettingsIcon } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
