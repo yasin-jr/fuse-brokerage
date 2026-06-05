@@ -25,8 +25,8 @@ export const Route = createFileRoute("/portfolio")({
   component: PortfolioPage,
 });
 
-const INDEX_SYMBOLS = ["^IXIC", "^GSPC", "^DJI", "^RUT"];
-const INDEX_NAMES: Record<string, string> = { "^IXIC": "NASDAQ", "^GSPC": "S&P 500", "^DJI": "DOW", "^RUT": "RUT" };
+const INDEX_SYMBOLS = ["^IXIC", "^GSPC", "^DJI", "BTC-USD"];
+const INDEX_NAMES: Record<string, string> = { "^IXIC": "NASDAQ", "^GSPC": "S&P 500", "^DJI": "DOW", "BTC-USD": "BTC" };
 
 function PortfolioPage() {
   const profile = useProfile();
