@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      orders: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          price: number
+          qty: number
+          symbol: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          price: number
+          qty: number
+          symbol: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          price?: number
+          qty?: number
+          symbol?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      positions: {
+        Row: {
+          avg_price: number
+          id: string
+          shares: number
+          symbol: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_price: number
+          id?: string
+          shares: number
+          symbol: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_price?: number
+          id?: string
+          shares?: number
+          symbol?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       post_comments: {
         Row: {
           body: string
@@ -114,6 +171,69 @@ export type Database = {
           user_id?: string
           username?: string
           visibility?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar: string
+          bio: string
+          cash: number | null
+          claimed_balance: number | null
+          created_at: string
+          difficulty: string | null
+          email: string | null
+          points: number
+          points_multiplier: number
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar?: string
+          bio?: string
+          cash?: number | null
+          claimed_balance?: number | null
+          created_at?: string
+          difficulty?: string | null
+          email?: string | null
+          points?: number
+          points_multiplier?: number
+          updated_at?: string
+          user_id: string
+          username?: string
+        }
+        Update: {
+          avatar?: string
+          bio?: string
+          cash?: number | null
+          claimed_balance?: number | null
+          created_at?: string
+          difficulty?: string | null
+          email?: string | null
+          points?: number
+          points_multiplier?: number
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      watchlist: {
+        Row: {
+          created_at: string
+          symbol: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          symbol: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          symbol?: string
+          user_id?: string
         }
         Relationships: []
       }
