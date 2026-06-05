@@ -127,6 +127,14 @@ function PortfolioPage() {
           </section>
         )}
 
+        {/* Portfolio chart */}
+        {claimed && (
+          <PortfolioChart
+            positions={positions.map((p) => ({ symbol: p.symbol, shares: p.shares }))}
+            cash={cash}
+          />
+        )}
+
         {/* Holdings */}
         <section>
           <h2 className="mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Holdings</h2>
