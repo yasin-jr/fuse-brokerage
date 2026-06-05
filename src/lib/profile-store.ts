@@ -148,6 +148,7 @@ export function placeBuy(symbol: string, qty: number, price: number) {
   }
   const order: Order = { id: Math.random().toString(36).slice(2), ts: Date.now(), action: "BUY", symbol, qty, price };
   saveProfile({ ...p, cash: cash - cost, positions, orders: [order, ...(p.orders ?? [])].slice(0, 200) });
+  import("./profile-sync").then((m) => { m.pushOrder(order).catch(() => {}); m.pushPositions(positions).catch(() => {}); });
 }
 
 export function placeSell(symbol: string, qty: number, price: number) {
@@ -155,7 +156,6 @@ export function placeSell(symbol: string, qty: number, price: number) {
   const positions = [...(p.positions ?? [])];
   const existing = positions.find((x) => x.symbol === symbol);
   if (!existing || existing.shares < qty) throw new Error(`You only have ${existing?.shares ?? 0} shares of ${symbol}.`);
-  // points: gain % over avg, times multiplier
   const gainPct = ((price - existing.avgPrice) / existing.avgPrice) * 100;
   const mult = p.pointsMultiplier ?? 1;
   const earned = Math.max(0, Math.floor(gainPct * mult));
@@ -169,6 +169,7 @@ export function placeSell(symbol: string, qty: number, price: number) {
     orders: [order, ...(p.orders ?? [])].slice(0, 200),
     points: (p.points ?? 0) + earned,
   });
+  import("./profile-sync").then((m) => { m.pushOrder(order).catch(() => {}); m.pushPositions(cleaned).catch(() => {}); });
   return { earned };
 }
 
