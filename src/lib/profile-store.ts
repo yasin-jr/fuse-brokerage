@@ -63,6 +63,8 @@ export function saveProfile(p: Profile) {
       localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
     }
     window.dispatchEvent(new Event("fuse-profile-change"));
+    // Fire-and-forget push to Supabase (no-op if not signed in or during hydration)
+    import("./profile-sync").then((m) => m.pushProfile(p).catch(() => {}));
   } catch {}
 }
 
