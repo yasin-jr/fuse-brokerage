@@ -96,6 +96,7 @@ export function restartAccount() {
     avatar: p.avatar,
     email: p.email,
   });
+  import("./profile-sync").then((m) => m.clearRemoteAccount().catch(() => {}));
 }
 
 /** Apply the difficulty pick: locks starting capital, resets points/positions. */
