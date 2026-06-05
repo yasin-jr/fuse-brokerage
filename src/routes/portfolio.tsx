@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { useProfile } from "@/lib/profile-store";
 import { getQuotes } from "@/lib/market.functions";
 import { LOGO_URL } from "@/lib/catalog";
+import { PortfolioChart } from "@/components/PortfolioChart";
 import { PieChart, Trophy } from "lucide-react";
 
 export const Route = createFileRoute("/portfolio")({
