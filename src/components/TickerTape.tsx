@@ -21,8 +21,8 @@ export function TickerTape() {
   const { data } = useQuery({
     queryKey: ["ticker-tape", SYMBOLS],
     queryFn: () => fetchQuotes({ data: { symbols: SYMBOLS } }),
-    refetchInterval: 30_000,
-    staleTime: 15_000,
+    refetchInterval: 8_000,
+    staleTime: 4_000,
   });
 
   const quotes = data?.quotes?.length ? data.quotes : FALLBACK;
