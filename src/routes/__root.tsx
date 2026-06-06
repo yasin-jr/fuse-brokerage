@@ -80,6 +80,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@FusionSynergy" },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/6d00551f-8490-4a8c-86a3-695d1d9978f6" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/6d00551f-8490-4a8c-86a3-695d1d9978f6" },
+      { title: "Lovable App" },
+      { property: "og:title", content: "Lovable App" },
+      { name: "twitter:title", content: "Lovable App" },
+      { name: "description", content: "- FUSE Brokerage App is an AI-powered fintech platform for financial intelligence and simulated trading." },
+      { property: "og:description", content: "- FUSE Brokerage App is an AI-powered fintech platform for financial intelligence and simulated trading." },
+      { name: "twitter:description", content: "- FUSE Brokerage App is an AI-powered fintech platform for financial intelligence and simulated trading." },
     ],
     links: [
       {
