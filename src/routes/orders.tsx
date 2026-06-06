@@ -2,16 +2,17 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { BackBar } from "@/components/BackBar";
 import { EmptyState } from "@/components/EmptyState";
-import { RECENT_ORDERS } from "@/lib/mock-data";
+import { useProfile } from "@/lib/profile-store";
+import { LOGO_URL } from "@/lib/catalog";
 import { Receipt } from "lucide-react";
 
 export const Route = createFileRoute("/orders")({
   head: () => ({
     meta: [
       { title: "Orders — FusionSynergy" },
-      { name: "description", content: "Your pending and filled practice trades — track every order across your FusionSynergy portfolio." },
+      { name: "description", content: "Your full trade history on FusionSynergy — every buy and sell across your portfolio." },
       { property: "og:title", content: "Orders — FusionSynergy" },
-      { property: "og:description", content: "Track pending and filled practice trades on FusionSynergy." },
+      { property: "og:description", content: "Track every order across your FusionSynergy portfolio." },
       { property: "og:url", content: "https://fuse-brokerage.lovable.app/orders" },
     ],
     links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/orders" }],
@@ -19,19 +20,21 @@ export const Route = createFileRoute("/orders")({
   component: OrdersPage,
 });
 
+function fmtTime(ts: number) {
+  return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
 function OrdersPage() {
-  const groups = [
-    { label: "Pending",  items: RECENT_ORDERS.filter(o => o.status === "PENDING") },
-    { label: "Filled",   items: RECENT_ORDERS.filter(o => o.status === "FILLED") },
-  ];
+  const profile = useProfile();
+  const orders = profile.orders ?? [];
 
   return (
     <AppShell>
       <BackBar />
-      <div className="mx-auto max-w-3xl px-4 py-6 space-y-6">
+      <div className="mx-auto max-w-3xl px-4 py-6 space-y-4">
         <h1 className="text-2xl font-semibold">Orders</h1>
 
-        {RECENT_ORDERS.length === 0 ? (
+        {orders.length === 0 ? (
           <EmptyState
             icon={<Receipt className="h-6 w-6 text-muted-foreground" />}
             title="No orders yet"
@@ -43,25 +46,36 @@ function OrdersPage() {
             }
           />
         ) : (
-          groups.map((g) => (
-            <section key={g.label}>
-              <h2 className="mb-2 text-sm font-semibold">{g.label}</h2>
-              <div className="glass rounded-xl divide-y divide-border/50">
-                {g.items.length === 0 && (
-                  <div className="p-3 text-sm text-muted-foreground">Nothing here.</div>
-                )}
-                {g.items.map((o) => (
-                  <div key={o.id} className="flex items-center justify-between p-3 text-sm">
-                    <div>
-                      <div className="font-semibold">{o.action} {o.ticker} ×{o.qty}</div>
-                      <div className="text-xs text-muted-foreground">@ ${o.price}</div>
+          <div className="glass rounded-2xl divide-y divide-border/40">
+            {orders.map((o) => {
+              const total = o.qty * o.price;
+              const isBuy = o.action === "BUY";
+              return (
+                <Link
+                  key={o.id}
+                  to="/stock/$symbol"
+                  params={{ symbol: o.symbol }}
+                  className="flex items-center gap-3 p-3 hover:bg-secondary/30"
+                >
+                  <img src={LOGO_URL(o.symbol)} alt="" onError={(e) => { e.currentTarget.style.opacity = "0.2"; }} className="h-10 w-10 rounded bg-white p-0.5 object-contain" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold">{o.symbol}</span>
+                      <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold ${isBuy ? "bg-emerald-500/20 text-emerald-300" : "bg-rose-500/20 text-rose-300"}`}>
+                        {o.action}
+                      </span>
                     </div>
-                    <span className="text-xs text-muted-foreground">{o.ts}</span>
+                    <div className="text-[11px] text-muted-foreground">
+                      {o.qty} sh @ ${o.price.toFixed(2)} · {fmtTime(o.ts)}
+                    </div>
                   </div>
-                ))}
-              </div>
-            </section>
-          ))
+                  <div className="text-right">
+                    <div className="text-sm tabular-nums">${total.toFixed(2)}</div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         )}
       </div>
     </AppShell>
