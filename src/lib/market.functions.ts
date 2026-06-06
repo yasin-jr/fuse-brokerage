@@ -7,10 +7,15 @@ export type Quote = {
   price: number;
   change: number; // percent
   prevClose: number;
+  marketState?: "REGULAR" | "PRE" | "POST" | "CLOSED";
+  extendedPrice?: number;
+  extendedChangePct?: number;
 };
 
 const FINNHUB_KEY = process.env.FINNHUB_KEY ?? "";
 const FMP_KEY = process.env.FMP_KEY ?? "";
+const TWELVE_KEY = process.env.TWELVEDATA_API_KEY ?? "";
+const MASSIVE_KEY = process.env.MASSIVE_API_KEY ?? "";
 
 const LABELS: Record<string, string> = {
   "BTC-USD": "BTC", "ETH-USD": "ETH", "SOL-USD": "SOL",
@@ -67,9 +72,24 @@ async function fetchFmpQuote(symbol: string): Promise<Quote | null> {
   } catch { return null; }
 }
 
+async function fetchTwelve(symbol: string): Promise<Quote | null> {
+  if (!TWELVE_KEY) return null;
+  try {
+    const r = await fetch(`https://api.twelvedata.com/quote?symbol=${encodeURIComponent(symbol)}&apikey=${TWELVE_KEY}`);
+    if (!r.ok) return null;
+    const j: any = await r.json();
+    const price = Number(j?.close) || 0;
+    const prev = Number(j?.previous_close) || price;
+    if (!price) return null;
+    return { symbol, label: LABELS[symbol] ?? symbol, price, change: prev ? ((price - prev) / prev) * 100 : 0, prevClose: prev };
+  } catch { return null; }
+}
+
 async function fetchOne(symbol: string): Promise<Quote | null> {
-  // Prefer FMP (user's key, edge-friendly), then Finnhub, then Yahoo.
-  return (await fetchFmpQuote(symbol)) ?? (await fetchFinnhub(symbol)) ?? (await fetchYahoo(symbol));
+  return (await fetchFmpQuote(symbol))
+      ?? (await fetchFinnhub(symbol))
+      ?? (await fetchTwelve(symbol))
+      ?? (await fetchYahoo(symbol));
 }
 
 const QuotesInputSchema = z.object({
@@ -145,7 +165,6 @@ export const getLargestByMarketCap = createServerFn({ method: "GET" })
         .sort((a: MarketCapRow, b: MarketCapRow) => b.marketCap - a.marketCap)
         .slice(0, data.limit);
 
-      // Enrich with daily change via batched quotes (50 max per call)
       const syms = rows.map((r) => r.symbol).join(",");
       if (syms) {
         try {
@@ -159,6 +178,83 @@ export const getLargestByMarketCap = createServerFn({ method: "GET" })
       }
       return { rows };
     } catch { return { rows: [] }; }
+  });
+
+// ---------------- Sector heatmap ----------------
+
+export type SectorPerf = { sector: string; change: number; tone: "up" | "down" | "neutral" };
+
+export const getSectorPerformance = createServerFn({ method: "GET" })
+  .handler(async (): Promise<{ sectors: SectorPerf[] }> => {
+    if (!FMP_KEY) return { sectors: [] };
+    try {
+      const r = await fetch(`https://financialmodelingprep.com/api/v3/sectors-performance?apikey=${FMP_KEY}`);
+      if (!r.ok) return { sectors: [] };
+      const j: any = await r.json();
+      if (!Array.isArray(j)) return { sectors: [] };
+      const sectors: SectorPerf[] = j.map((x: any) => {
+        const raw = String(x.changesPercentage ?? "0").replace("%", "").trim();
+        const change = Number(raw) || 0;
+        const tone: SectorPerf["tone"] = Math.abs(change) < 0.1 ? "neutral" : change >= 0 ? "up" : "down";
+        return { sector: String(x.sector ?? ""), change, tone };
+      });
+      return { sectors };
+    } catch { return { sectors: [] }; }
+  });
+
+// ---------------- Symbol search (full FMP catalog) ----------------
+
+export type SymbolHit = { symbol: string; name: string; exchange: string; type: string };
+
+let _symbolIndex: SymbolHit[] | null = null;
+let _symbolIndexAt = 0;
+const SYMBOL_INDEX_TTL = 24 * 60 * 60 * 1000;
+
+async function ensureSymbolIndex(): Promise<SymbolHit[]> {
+  if (_symbolIndex && Date.now() - _symbolIndexAt < SYMBOL_INDEX_TTL) return _symbolIndex;
+  if (!FMP_KEY) return [];
+  try {
+    const r = await fetch(`https://financialmodelingprep.com/api/v3/stock/list?apikey=${FMP_KEY}`);
+    if (!r.ok) return _symbolIndex ?? [];
+    const j: any = await r.json();
+    if (!Array.isArray(j)) return _symbolIndex ?? [];
+    _symbolIndex = j
+      .filter((x: any) => x?.symbol && x?.name)
+      .map((x: any) => ({
+        symbol: String(x.symbol),
+        name: String(x.name),
+        exchange: String(x.exchangeShortName ?? x.exchange ?? ""),
+        type: String(x.type ?? ""),
+      }));
+    _symbolIndexAt = Date.now();
+    return _symbolIndex;
+  } catch { return _symbolIndex ?? []; }
+}
+
+const SearchInput = z.object({ q: z.string().min(1).max(64), limit: z.number().int().min(1).max(50).default(25) });
+
+export const searchSymbols = createServerFn({ method: "GET" })
+  .inputValidator((d) => SearchInput.parse(d))
+  .handler(async ({ data }): Promise<{ hits: SymbolHit[] }> => {
+    const idx = await ensureSymbolIndex();
+    const needle = data.q.trim().toLowerCase();
+    if (!needle) return { hits: [] };
+    const scored: { x: SymbolHit; s: number }[] = [];
+    for (const x of idx) {
+      const sym = x.symbol.toLowerCase();
+      const nm = x.name.toLowerCase();
+      let s = 0;
+      if (sym === needle) s += 1000;
+      else if (sym.startsWith(needle)) s += 200;
+      else if (sym.includes(needle)) s += 60;
+      if (nm.startsWith(needle)) s += 100;
+      else if (nm.includes(needle)) s += 30;
+      // Prefer common exchanges
+      if (s > 0 && (x.exchange === "NASDAQ" || x.exchange === "NYSE")) s += 25;
+      if (s > 0) scored.push({ x, s });
+    }
+    scored.sort((a, b) => b.s - a.s);
+    return { hits: scored.slice(0, data.limit).map((r) => r.x) };
   });
 
 // ---------------- Candles ----------------
@@ -296,7 +392,6 @@ export const getPortfolioHistory = createServerFn({ method: "POST" })
   .inputValidator((d) => PortfolioHistoryInput.parse(d))
   .handler(async ({ data }): Promise<{ points: PortfolioPoint[] }> => {
     if (data.positions.length === 0) {
-      // Flat line at cash value
       const now = Date.now();
       return { points: [{ t: now - 86400_000, v: data.cash }, { t: now, v: data.cash }] };
     }
@@ -306,7 +401,6 @@ export const getPortfolioHistory = createServerFn({ method: "POST" })
         candles: await fetchCandlesAny(p.symbol, data.range as Range),
       })),
     );
-    // Build union of timestamps (intersect by index ~ same range often aligns)
     const tsSet = new Set<number>();
     for (const x of all) for (const c of x.candles) tsSet.add(c.t);
     const tsArr = [...tsSet].sort((a, b) => a - b);
@@ -314,7 +408,6 @@ export const getPortfolioHistory = createServerFn({ method: "POST" })
       const now = Date.now();
       return { points: [{ t: now - 86400_000, v: data.cash }, { t: now, v: data.cash }] };
     }
-    // Pre-index per holding for fast lookup with forward-fill
     const indexed = all.map((x) => {
       const m = new Map<number, number>();
       for (const c of x.candles) m.set(c.t, c.c);
@@ -358,9 +451,24 @@ export type CompanyStats = {
   beta: number;
   high52: number;
   low52: number;
+  website: string;
+  marketState: "REGULAR" | "PRE" | "POST" | "CLOSED";
 };
 
 const SymbolInput = z.object({ symbol: z.string().min(1).max(20) });
+
+function computeMarketState(): "REGULAR" | "PRE" | "POST" | "CLOSED" {
+  // Naive US/Eastern check using UTC offset of -4 (DST) approximation.
+  const now = new Date();
+  const utc = now.getUTCHours() * 60 + now.getUTCMinutes();
+  const day = now.getUTCDay();
+  if (day === 0 || day === 6) return "CLOSED";
+  // ET ≈ UTC-4. Pre 4:00 ET (08:00 UTC) → 9:30 ET (13:30 UTC); regular until 16:00 ET (20:00 UTC); post until 20:00 ET (00:00 UTC).
+  if (utc >= 480 && utc < 810) return "PRE";
+  if (utc >= 810 && utc < 1200) return "REGULAR";
+  if (utc >= 1200 && utc < 1440) return "POST";
+  return "CLOSED";
+}
 
 export const getCompanyStats = createServerFn({ method: "GET" })
   .inputValidator((data) => SymbolInput.parse(data))
@@ -398,6 +506,8 @@ export const getCompanyStats = createServerFn({ method: "GET" })
         beta: Number(p?.beta ?? 0),
         high52: Number(q?.yearHigh ?? p?.range?.split("-")?.[1] ?? 0),
         low52: Number(q?.yearLow ?? p?.range?.split("-")?.[0] ?? 0),
+        website: String(p?.website ?? ""),
+        marketState: computeMarketState(),
       };
       return { stats };
     } catch { return { stats: null }; }

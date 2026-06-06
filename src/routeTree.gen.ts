@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WatchlistRouteImport } from './routes/watchlist'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ProjectsRouteImport } from './routes/projects'
@@ -26,7 +27,16 @@ import { Route as AiRouteImport } from './routes/ai'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StockSymbolRouteImport } from './routes/stock.$symbol'
 import { Route as OnboardingDifficultyRouteImport } from './routes/onboarding.difficulty'
+import { Route as InvestThemesRouteImport } from './routes/invest.themes'
+import { Route as InvestLargestCapRouteImport } from './routes/invest.largest-cap'
+import { Route as InvestThemeThemeIdRouteImport } from './routes/invest.theme.$themeId'
+import { Route as InvestMoversKindRouteImport } from './routes/invest.movers.$kind'
 
+const WatchlistRoute = WatchlistRouteImport.update({
+  id: '/watchlist',
+  path: '/watchlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -112,6 +122,26 @@ const OnboardingDifficultyRoute = OnboardingDifficultyRouteImport.update({
   path: '/onboarding/difficulty',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InvestThemesRoute = InvestThemesRouteImport.update({
+  id: '/themes',
+  path: '/themes',
+  getParentRoute: () => InvestRoute,
+} as any)
+const InvestLargestCapRoute = InvestLargestCapRouteImport.update({
+  id: '/largest-cap',
+  path: '/largest-cap',
+  getParentRoute: () => InvestRoute,
+} as any)
+const InvestThemeThemeIdRoute = InvestThemeThemeIdRouteImport.update({
+  id: '/theme/$themeId',
+  path: '/theme/$themeId',
+  getParentRoute: () => InvestRoute,
+} as any)
+const InvestMoversKindRoute = InvestMoversKindRouteImport.update({
+  id: '/movers/$kind',
+  path: '/movers/$kind',
+  getParentRoute: () => InvestRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -119,7 +149,7 @@ export interface FileRoutesByFullPath {
   '/discover': typeof DiscoverRoute
   '/discussion': typeof DiscussionRoute
   '/help': typeof HelpRoute
-  '/invest': typeof InvestRoute
+  '/invest': typeof InvestRouteWithChildren
   '/leaderboard': typeof LeaderboardRoute
   '/learn': typeof LearnRoute
   '/login': typeof LoginRoute
@@ -129,8 +159,13 @@ export interface FileRoutesByFullPath {
   '/projects': typeof ProjectsRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/watchlist': typeof WatchlistRoute
+  '/invest/largest-cap': typeof InvestLargestCapRoute
+  '/invest/themes': typeof InvestThemesRoute
   '/onboarding/difficulty': typeof OnboardingDifficultyRoute
   '/stock/$symbol': typeof StockSymbolRoute
+  '/invest/movers/$kind': typeof InvestMoversKindRoute
+  '/invest/theme/$themeId': typeof InvestThemeThemeIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -138,7 +173,7 @@ export interface FileRoutesByTo {
   '/discover': typeof DiscoverRoute
   '/discussion': typeof DiscussionRoute
   '/help': typeof HelpRoute
-  '/invest': typeof InvestRoute
+  '/invest': typeof InvestRouteWithChildren
   '/leaderboard': typeof LeaderboardRoute
   '/learn': typeof LearnRoute
   '/login': typeof LoginRoute
@@ -148,8 +183,13 @@ export interface FileRoutesByTo {
   '/projects': typeof ProjectsRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/watchlist': typeof WatchlistRoute
+  '/invest/largest-cap': typeof InvestLargestCapRoute
+  '/invest/themes': typeof InvestThemesRoute
   '/onboarding/difficulty': typeof OnboardingDifficultyRoute
   '/stock/$symbol': typeof StockSymbolRoute
+  '/invest/movers/$kind': typeof InvestMoversKindRoute
+  '/invest/theme/$themeId': typeof InvestThemeThemeIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -158,7 +198,7 @@ export interface FileRoutesById {
   '/discover': typeof DiscoverRoute
   '/discussion': typeof DiscussionRoute
   '/help': typeof HelpRoute
-  '/invest': typeof InvestRoute
+  '/invest': typeof InvestRouteWithChildren
   '/leaderboard': typeof LeaderboardRoute
   '/learn': typeof LearnRoute
   '/login': typeof LoginRoute
@@ -168,8 +208,13 @@ export interface FileRoutesById {
   '/projects': typeof ProjectsRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/watchlist': typeof WatchlistRoute
+  '/invest/largest-cap': typeof InvestLargestCapRoute
+  '/invest/themes': typeof InvestThemesRoute
   '/onboarding/difficulty': typeof OnboardingDifficultyRoute
   '/stock/$symbol': typeof StockSymbolRoute
+  '/invest/movers/$kind': typeof InvestMoversKindRoute
+  '/invest/theme/$themeId': typeof InvestThemeThemeIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -189,8 +234,13 @@ export interface FileRouteTypes {
     | '/projects'
     | '/settings'
     | '/sitemap.xml'
+    | '/watchlist'
+    | '/invest/largest-cap'
+    | '/invest/themes'
     | '/onboarding/difficulty'
     | '/stock/$symbol'
+    | '/invest/movers/$kind'
+    | '/invest/theme/$themeId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -208,8 +258,13 @@ export interface FileRouteTypes {
     | '/projects'
     | '/settings'
     | '/sitemap.xml'
+    | '/watchlist'
+    | '/invest/largest-cap'
+    | '/invest/themes'
     | '/onboarding/difficulty'
     | '/stock/$symbol'
+    | '/invest/movers/$kind'
+    | '/invest/theme/$themeId'
   id:
     | '__root__'
     | '/'
@@ -227,8 +282,13 @@ export interface FileRouteTypes {
     | '/projects'
     | '/settings'
     | '/sitemap.xml'
+    | '/watchlist'
+    | '/invest/largest-cap'
+    | '/invest/themes'
     | '/onboarding/difficulty'
     | '/stock/$symbol'
+    | '/invest/movers/$kind'
+    | '/invest/theme/$themeId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -237,7 +297,7 @@ export interface RootRouteChildren {
   DiscoverRoute: typeof DiscoverRoute
   DiscussionRoute: typeof DiscussionRoute
   HelpRoute: typeof HelpRoute
-  InvestRoute: typeof InvestRoute
+  InvestRoute: typeof InvestRouteWithChildren
   LeaderboardRoute: typeof LeaderboardRoute
   LearnRoute: typeof LearnRoute
   LoginRoute: typeof LoginRoute
@@ -247,12 +307,20 @@ export interface RootRouteChildren {
   ProjectsRoute: typeof ProjectsRoute
   SettingsRoute: typeof SettingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  WatchlistRoute: typeof WatchlistRoute
   OnboardingDifficultyRoute: typeof OnboardingDifficultyRoute
   StockSymbolRoute: typeof StockSymbolRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/watchlist': {
+      id: '/watchlist'
+      path: '/watchlist'
+      fullPath: '/watchlist'
+      preLoaderRoute: typeof WatchlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -372,8 +440,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingDifficultyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/invest/themes': {
+      id: '/invest/themes'
+      path: '/themes'
+      fullPath: '/invest/themes'
+      preLoaderRoute: typeof InvestThemesRouteImport
+      parentRoute: typeof InvestRoute
+    }
+    '/invest/largest-cap': {
+      id: '/invest/largest-cap'
+      path: '/largest-cap'
+      fullPath: '/invest/largest-cap'
+      preLoaderRoute: typeof InvestLargestCapRouteImport
+      parentRoute: typeof InvestRoute
+    }
+    '/invest/theme/$themeId': {
+      id: '/invest/theme/$themeId'
+      path: '/theme/$themeId'
+      fullPath: '/invest/theme/$themeId'
+      preLoaderRoute: typeof InvestThemeThemeIdRouteImport
+      parentRoute: typeof InvestRoute
+    }
+    '/invest/movers/$kind': {
+      id: '/invest/movers/$kind'
+      path: '/movers/$kind'
+      fullPath: '/invest/movers/$kind'
+      preLoaderRoute: typeof InvestMoversKindRouteImport
+      parentRoute: typeof InvestRoute
+    }
   }
 }
+
+interface InvestRouteChildren {
+  InvestLargestCapRoute: typeof InvestLargestCapRoute
+  InvestThemesRoute: typeof InvestThemesRoute
+  InvestMoversKindRoute: typeof InvestMoversKindRoute
+  InvestThemeThemeIdRoute: typeof InvestThemeThemeIdRoute
+}
+
+const InvestRouteChildren: InvestRouteChildren = {
+  InvestLargestCapRoute: InvestLargestCapRoute,
+  InvestThemesRoute: InvestThemesRoute,
+  InvestMoversKindRoute: InvestMoversKindRoute,
+  InvestThemeThemeIdRoute: InvestThemeThemeIdRoute,
+}
+
+const InvestRouteWithChildren =
+  InvestRoute._addFileChildren(InvestRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -381,7 +494,7 @@ const rootRouteChildren: RootRouteChildren = {
   DiscoverRoute: DiscoverRoute,
   DiscussionRoute: DiscussionRoute,
   HelpRoute: HelpRoute,
-  InvestRoute: InvestRoute,
+  InvestRoute: InvestRouteWithChildren,
   LeaderboardRoute: LeaderboardRoute,
   LearnRoute: LearnRoute,
   LoginRoute: LoginRoute,
@@ -391,19 +504,10 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectsRoute: ProjectsRoute,
   SettingsRoute: SettingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  WatchlistRoute: WatchlistRoute,
   OnboardingDifficultyRoute: OnboardingDifficultyRoute,
   StockSymbolRoute: StockSymbolRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

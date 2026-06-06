@@ -137,6 +137,7 @@ export async function addToWatchlist(symbol: string) {
   const user = sess.session?.user;
   if (!user) return;
   await supabase.from("watchlist").upsert({ user_id: user.id, symbol }, { onConflict: "user_id,symbol" });
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("fuse-watchlist-change"));
 }
 
 export async function removeFromWatchlist(symbol: string) {
@@ -144,4 +145,15 @@ export async function removeFromWatchlist(symbol: string) {
   const user = sess.session?.user;
   if (!user) return;
   await supabase.from("watchlist").delete().eq("user_id", user.id).eq("symbol", symbol);
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("fuse-watchlist-change"));
+}
+
+export async function toggleWatchlist(symbol: string): Promise<boolean> {
+  const list = await getWatchlist();
+  if (list.includes(symbol)) {
+    await removeFromWatchlist(symbol);
+    return false;
+  }
+  await addToWatchlist(symbol);
+  return true;
 }
