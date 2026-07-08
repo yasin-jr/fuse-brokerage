@@ -15,12 +15,15 @@ export type Quote = {
 const FINNHUB_KEY = process.env.FINNHUB_KEY ?? "";
 const FMP_KEY = process.env.FMP_KEY ?? "";
 const TWELVE_KEY = process.env.TWELVEDATA_API_KEY ?? "";
-const MASSIVE_KEY = process.env.MASSIVE_API_KEY ?? "";
 
-const LABELS: Record<string, string> = {
-  "BTC-USD": "BTC", "ETH-USD": "ETH", "SOL-USD": "SOL",
-  "^GSPC": "S&P 500", "^IXIC": "NASDAQ", "^DJI": "DOW", "^FTSE": "FTSE", "^RUT": "RUT",
-  "GC=F": "GOLD", "CL=F": "OIL", "DX=F": "DXY",
+// Symbol remapping — some tickers use different conventions across providers.
+const FMP_SYMBOL: Record<string, string> = {
+  "BTC-USD": "BTCUSD",
+  "ETH-USD": "ETHUSD",
+  "SOL-USD": "SOLUSD",
+  "GC=F": "GCUSD",
+  "CL=F": "USO",   // WTI oil proxy
+  "DX=F": "UUP",   // Dollar index proxy
 };
 const FINNHUB_SYMBOL: Record<string, string> = {
   "BTC-USD": "BINANCE:BTCUSDT",
@@ -28,18 +31,31 @@ const FINNHUB_SYMBOL: Record<string, string> = {
   "SOL-USD": "BINANCE:SOLUSDT",
 };
 
-async function fetchYahoo(symbol: string): Promise<Quote | null> {
+const LABELS: Record<string, string> = {
+  "BTC-USD": "BTC", "ETH-USD": "ETH", "SOL-USD": "SOL",
+  "BTCUSD": "BTC", "ETHUSD": "ETH", "SOLUSD": "SOL",
+  "^GSPC": "S&P 500", "^IXIC": "NASDAQ", "^DJI": "DOW", "^FTSE": "FTSE", "^RUT": "RUT",
+  "GC=F": "GOLD", "GCUSD": "GOLD", "CL=F": "OIL", "DX=F": "DXY",
+};
+
+function fmpSym(s: string) { return FMP_SYMBOL[s] ?? s; }
+
+// ---------------- Quotes ----------------
+
+async function fetchFmpQuote(symbol: string): Promise<Quote | null> {
+  if (!FMP_KEY) return null;
   try {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=1d`;
-    const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 (compatible; FusionSynergy/1.0)" } });
+    const s = fmpSym(symbol);
+    const r = await fetch(`https://financialmodelingprep.com/stable/quote?symbol=${encodeURIComponent(s)}&apikey=${FMP_KEY}`);
     if (!r.ok) return null;
     const j: any = await r.json();
-    const meta = j?.chart?.result?.[0]?.meta;
-    if (!meta) return null;
-    const price = meta.regularMarketPrice ?? 0;
-    const prev = meta.chartPreviousClose ?? meta.previousClose ?? price;
+    const q = Array.isArray(j) ? j[0] : null;
+    if (!q || typeof q.price !== "number") return null;
+    const price = Number(q.price) || 0;
+    const prev = Number(q.previousClose) || price;
+    const pct = q.changePercentage != null ? Number(q.changePercentage) : (prev ? ((price - prev) / prev) * 100 : 0);
     if (!price) return null;
-    return { symbol, label: LABELS[symbol] ?? symbol, price, change: prev ? ((price - prev) / prev) * 100 : 0, prevClose: prev };
+    return { symbol, label: LABELS[symbol] ?? symbol, price, change: pct, prevClose: prev };
   } catch { return null; }
 }
 
@@ -52,21 +68,6 @@ async function fetchFinnhub(symbol: string): Promise<Quote | null> {
     const j: any = await r.json();
     const price = Number(j?.c) || 0;
     const prev = Number(j?.pc) || price;
-    if (!price) return null;
-    return { symbol, label: LABELS[symbol] ?? symbol, price, change: prev ? ((price - prev) / prev) * 100 : 0, prevClose: prev };
-  } catch { return null; }
-}
-
-async function fetchFmpQuote(symbol: string): Promise<Quote | null> {
-  if (!FMP_KEY) return null;
-  try {
-    const r = await fetch(`https://financialmodelingprep.com/api/v3/quote/${encodeURIComponent(symbol)}?apikey=${FMP_KEY}`);
-    if (!r.ok) return null;
-    const arr: any = await r.json();
-    const j = Array.isArray(arr) ? arr[0] : null;
-    if (!j) return null;
-    const price = Number(j.price) || 0;
-    const prev = Number(j.previousClose) || price;
     if (!price) return null;
     return { symbol, label: LABELS[symbol] ?? symbol, price, change: prev ? ((price - prev) / prev) * 100 : 0, prevClose: prev };
   } catch { return null; }
@@ -88,8 +89,7 @@ async function fetchTwelve(symbol: string): Promise<Quote | null> {
 async function fetchOne(symbol: string): Promise<Quote | null> {
   return (await fetchFmpQuote(symbol))
       ?? (await fetchFinnhub(symbol))
-      ?? (await fetchTwelve(symbol))
-      ?? (await fetchYahoo(symbol));
+      ?? (await fetchTwelve(symbol));
 }
 
 const QuotesInputSchema = z.object({
@@ -107,19 +107,19 @@ export const getQuotes = createServerFn({ method: "GET" })
 
 export type Mover = { symbol: string; name: string; price: number; change: number };
 
-async function fmpList(path: string, limit: number): Promise<Mover[]> {
+async function fmpMovers(path: string, limit: number): Promise<Mover[]> {
   if (!FMP_KEY) return [];
   try {
-    const r = await fetch(`https://financialmodelingprep.com/api/v3/${path}?apikey=${FMP_KEY}`);
+    const r = await fetch(`https://financialmodelingprep.com/stable/${path}?apikey=${FMP_KEY}`);
     if (!r.ok) return [];
     const j: any = await r.json();
     if (!Array.isArray(j)) return [];
     return j.slice(0, limit).map((x: any) => ({
-      symbol: String(x.symbol ?? x.ticker ?? ""),
+      symbol: String(x.symbol ?? ""),
       name: String(x.name ?? x.companyName ?? ""),
       price: Number(x.price ?? 0),
-      change: Number(x.changesPercentage ?? x.changePercent ?? 0),
-    }));
+      change: Number(x.changesPercentage ?? x.changePercentage ?? 0),
+    })).filter((m: Mover) => m.symbol);
   } catch { return []; }
 }
 
@@ -129,9 +129,9 @@ export const getMovers = createServerFn({ method: "GET" })
   .inputValidator((d) => MoversInput.parse(d))
   .handler(async ({ data }) => {
     const [gainers, losers, actives] = await Promise.all([
-      fmpList("stock_market/gainers", data.limit),
-      fmpList("stock_market/losers", data.limit),
-      fmpList("stock_market/actives", data.limit),
+      fmpMovers("biggest-gainers", data.limit),
+      fmpMovers("biggest-losers", data.limit),
+      fmpMovers("most-actives", data.limit),
     ]);
     return { gainers, losers, actives };
   });
@@ -140,121 +140,137 @@ export const getMovers = createServerFn({ method: "GET" })
 
 export type MarketCapRow = { symbol: string; name: string; price: number; marketCap: number; change: number };
 
-const LargestInput = z.object({ limit: z.number().int().min(1).max(50).default(50) }).default({ limit: 50 });
+// Curated top-30 US mega-caps (screener endpoint is premium-only on this plan).
+const MEGA_CAPS: { symbol: string; name: string }[] = [
+  { symbol: "AAPL",  name: "Apple Inc." },
+  { symbol: "MSFT",  name: "Microsoft Corporation" },
+  { symbol: "NVDA",  name: "NVIDIA Corporation" },
+  { symbol: "GOOGL", name: "Alphabet Inc." },
+  { symbol: "AMZN",  name: "Amazon.com, Inc." },
+  { symbol: "META",  name: "Meta Platforms, Inc." },
+  { symbol: "TSLA",  name: "Tesla, Inc." },
+  { symbol: "AVGO",  name: "Broadcom Inc." },
+  { symbol: "BRK.B", name: "Berkshire Hathaway" },
+  { symbol: "LLY",   name: "Eli Lilly and Co." },
+  { symbol: "JPM",   name: "JPMorgan Chase & Co." },
+  { symbol: "V",     name: "Visa Inc." },
+  { symbol: "WMT",   name: "Walmart Inc." },
+  { symbol: "XOM",   name: "Exxon Mobil Corporation" },
+  { symbol: "MA",    name: "Mastercard Incorporated" },
+  { symbol: "ORCL",  name: "Oracle Corporation" },
+  { symbol: "PG",    name: "Procter & Gamble" },
+  { symbol: "COST",  name: "Costco Wholesale" },
+  { symbol: "JNJ",   name: "Johnson & Johnson" },
+  { symbol: "HD",    name: "The Home Depot, Inc." },
+  { symbol: "BAC",   name: "Bank of America" },
+  { symbol: "NFLX",  name: "Netflix, Inc." },
+  { symbol: "ABBV",  name: "AbbVie Inc." },
+  { symbol: "KO",    name: "The Coca-Cola Company" },
+  { symbol: "PEP",   name: "PepsiCo, Inc." },
+  { symbol: "CVX",   name: "Chevron Corporation" },
+  { symbol: "TMUS",  name: "T-Mobile US, Inc." },
+  { symbol: "AMD",   name: "Advanced Micro Devices" },
+  { symbol: "CRM",   name: "Salesforce, Inc." },
+  { symbol: "ADBE",  name: "Adobe Inc." },
+];
+
+const LargestInput = z.object({ limit: z.number().int().min(1).max(30).default(20) }).default({ limit: 20 });
 
 export const getLargestByMarketCap = createServerFn({ method: "GET" })
   .inputValidator((d) => LargestInput.parse(d))
   .handler(async ({ data }): Promise<{ rows: MarketCapRow[] }> => {
     if (!FMP_KEY) return { rows: [] };
-    try {
-      const r = await fetch(
-        `https://financialmodelingprep.com/api/v3/stock-screener?marketCapMoreThan=100000000000&isEtf=false&country=US&limit=${data.limit}&apikey=${FMP_KEY}`,
-      );
-      if (!r.ok) return { rows: [] };
-      const j: any = await r.json();
-      if (!Array.isArray(j)) return { rows: [] };
-      const rows: MarketCapRow[] = j
-        .map((x: any) => ({
-          symbol: String(x.symbol ?? ""),
-          name: String(x.companyName ?? ""),
-          price: Number(x.price ?? 0),
-          marketCap: Number(x.marketCap ?? 0),
-          change: 0,
-        }))
-        .filter((x: MarketCapRow) => x.symbol && x.marketCap > 0)
-        .sort((a: MarketCapRow, b: MarketCapRow) => b.marketCap - a.marketCap)
-        .slice(0, data.limit);
-
-      const syms = rows.map((r) => r.symbol).join(",");
-      if (syms) {
-        try {
-          const qr = await fetch(`https://financialmodelingprep.com/api/v3/quote/${syms}?apikey=${FMP_KEY}`);
-          if (qr.ok) {
-            const qj: any[] = await qr.json();
-            const m = new Map(qj.map((x: any) => [String(x.symbol), Number(x.changesPercentage ?? 0)]));
-            for (const row of rows) row.change = m.get(row.symbol) ?? 0;
-          }
-        } catch {}
-      }
-      return { rows };
-    } catch { return { rows: [] }; }
+    const list = MEGA_CAPS.slice(0, data.limit);
+    const quotes = await Promise.all(list.map(async (m) => {
+      try {
+        const r = await fetch(`https://financialmodelingprep.com/stable/quote?symbol=${encodeURIComponent(m.symbol)}&apikey=${FMP_KEY}`);
+        if (!r.ok) return null;
+        const j: any = await r.json();
+        const q = Array.isArray(j) ? j[0] : null;
+        if (!q) return null;
+        return {
+          symbol: m.symbol,
+          name: m.name,
+          price: Number(q.price ?? 0),
+          marketCap: Number(q.marketCap ?? 0),
+          change: Number(q.changePercentage ?? 0),
+        };
+      } catch { return null; }
+    }));
+    const rows = quotes.filter((r): r is MarketCapRow => !!r && r.price > 0)
+      .sort((a, b) => b.marketCap - a.marketCap);
+    return { rows };
   });
 
 // ---------------- Sector heatmap ----------------
 
 export type SectorPerf = { sector: string; change: number; tone: "up" | "down" | "neutral" };
 
+async function fetchSectorSnapshot(date: string): Promise<any[]> {
+  const r = await fetch(`https://financialmodelingprep.com/stable/sector-performance-snapshot?date=${date}&apikey=${FMP_KEY}`);
+  if (!r.ok) return [];
+  try {
+    const j: any = await r.json();
+    return Array.isArray(j) ? j : [];
+  } catch { return []; }
+}
+
 export const getSectorPerformance = createServerFn({ method: "GET" })
   .handler(async (): Promise<{ sectors: SectorPerf[] }> => {
     if (!FMP_KEY) return { sectors: [] };
-    try {
-      const r = await fetch(`https://financialmodelingprep.com/api/v3/sectors-performance?apikey=${FMP_KEY}`);
-      if (!r.ok) return { sectors: [] };
-      const j: any = await r.json();
-      if (!Array.isArray(j)) return { sectors: [] };
-      const sectors: SectorPerf[] = j.map((x: any) => {
-        const raw = String(x.changesPercentage ?? "0").replace("%", "").trim();
-        const change = Number(raw) || 0;
-        const tone: SectorPerf["tone"] = Math.abs(change) < 0.1 ? "neutral" : change >= 0 ? "up" : "down";
-        return { sector: String(x.sector ?? ""), change, tone };
-      });
-      return { sectors };
-    } catch { return { sectors: [] }; }
+    // Try today then walk back up to 5 days (weekends/holidays return empty).
+    let rows: any[] = [];
+    const now = new Date();
+    for (let back = 0; back < 6 && rows.length === 0; back++) {
+      const d = new Date(now.getTime() - back * 86400_000);
+      const iso = d.toISOString().slice(0, 10);
+      rows = await fetchSectorSnapshot(iso);
+    }
+    if (rows.length === 0) return { sectors: [] };
+    // Aggregate per sector across exchanges (average).
+    const agg = new Map<string, { sum: number; n: number }>();
+    for (const r of rows) {
+      const s = String(r.sector ?? "");
+      const c = Number(r.averageChange ?? 0);
+      if (!s || !Number.isFinite(c)) continue;
+      const cur = agg.get(s) ?? { sum: 0, n: 0 };
+      cur.sum += c; cur.n += 1;
+      agg.set(s, cur);
+    }
+    const sectors: SectorPerf[] = [...agg.entries()].map(([sector, { sum, n }]) => {
+      const change = sum / n;
+      const tone: SectorPerf["tone"] = Math.abs(change) < 0.1 ? "neutral" : change >= 0 ? "up" : "down";
+      return { sector, change, tone };
+    }).sort((a, b) => a.sector.localeCompare(b.sector));
+    return { sectors };
   });
 
-// ---------------- Symbol search (full FMP catalog) ----------------
+// ---------------- Symbol search (Finnhub) ----------------
 
 export type SymbolHit = { symbol: string; name: string; exchange: string; type: string };
-
-let _symbolIndex: SymbolHit[] | null = null;
-let _symbolIndexAt = 0;
-const SYMBOL_INDEX_TTL = 24 * 60 * 60 * 1000;
-
-async function ensureSymbolIndex(): Promise<SymbolHit[]> {
-  if (_symbolIndex && Date.now() - _symbolIndexAt < SYMBOL_INDEX_TTL) return _symbolIndex;
-  if (!FMP_KEY) return [];
-  try {
-    const r = await fetch(`https://financialmodelingprep.com/api/v3/stock/list?apikey=${FMP_KEY}`);
-    if (!r.ok) return _symbolIndex ?? [];
-    const j: any = await r.json();
-    if (!Array.isArray(j)) return _symbolIndex ?? [];
-    _symbolIndex = j
-      .filter((x: any) => x?.symbol && x?.name)
-      .map((x: any) => ({
-        symbol: String(x.symbol),
-        name: String(x.name),
-        exchange: String(x.exchangeShortName ?? x.exchange ?? ""),
-        type: String(x.type ?? ""),
-      }));
-    _symbolIndexAt = Date.now();
-    return _symbolIndex;
-  } catch { return _symbolIndex ?? []; }
-}
 
 const SearchInput = z.object({ q: z.string().min(1).max(64), limit: z.number().int().min(1).max(50).default(25) });
 
 export const searchSymbols = createServerFn({ method: "GET" })
   .inputValidator((d) => SearchInput.parse(d))
   .handler(async ({ data }): Promise<{ hits: SymbolHit[] }> => {
-    const idx = await ensureSymbolIndex();
-    const needle = data.q.trim().toLowerCase();
-    if (!needle) return { hits: [] };
-    const scored: { x: SymbolHit; s: number }[] = [];
-    for (const x of idx) {
-      const sym = x.symbol.toLowerCase();
-      const nm = x.name.toLowerCase();
-      let s = 0;
-      if (sym === needle) s += 1000;
-      else if (sym.startsWith(needle)) s += 200;
-      else if (sym.includes(needle)) s += 60;
-      if (nm.startsWith(needle)) s += 100;
-      else if (nm.includes(needle)) s += 30;
-      // Prefer common exchanges
-      if (s > 0 && (x.exchange === "NASDAQ" || x.exchange === "NYSE")) s += 25;
-      if (s > 0) scored.push({ x, s });
-    }
-    scored.sort((a, b) => b.s - a.s);
-    return { hits: scored.slice(0, data.limit).map((r) => r.x) };
+    if (!FINNHUB_KEY) return { hits: [] };
+    try {
+      const r = await fetch(`https://finnhub.io/api/v1/search?q=${encodeURIComponent(data.q)}&token=${FINNHUB_KEY}`);
+      if (!r.ok) return { hits: [] };
+      const j: any = await r.json();
+      const arr: any[] = Array.isArray(j?.result) ? j.result : [];
+      const hits: SymbolHit[] = arr
+        .filter((x) => x?.symbol && x?.description && !String(x.symbol).includes("."))
+        .slice(0, data.limit)
+        .map((x) => ({
+          symbol: String(x.symbol),
+          name: String(x.description),
+          exchange: "",
+          type: String(x.type ?? "").toLowerCase().includes("etf") ? "etf" : "stock",
+        }));
+      return { hits };
+    } catch { return { hits: [] }; }
   });
 
 // ---------------- Candles ----------------
@@ -267,51 +283,6 @@ const CandlesInput = z.object({
   range: z.enum(["1D", "1W", "1M", "3M", "6M", "1Y", "10Y", "YTD", "ALL"]),
 });
 
-function rangeToParams(range: Range) {
-  const now = new Date();
-  const to = Math.floor(now.getTime() / 1000);
-  let from = to;
-  let interval = "1d";
-  switch (range) {
-    case "1D":  interval = "5m";  from = to - 60 * 60 * 24; break;
-    case "1W":  interval = "30m"; from = to - 60 * 60 * 24 * 7; break;
-    case "1M":  interval = "1d";  from = to - 60 * 60 * 24 * 31; break;
-    case "3M":  interval = "1d";  from = to - 60 * 60 * 24 * 93; break;
-    case "6M":  interval = "1d";  from = to - 60 * 60 * 24 * 186; break;
-    case "1Y":  interval = "1d";  from = to - 60 * 60 * 24 * 365; break;
-    case "10Y": interval = "1wk"; from = to - 60 * 60 * 24 * 365 * 10; break;
-    case "YTD": interval = "1d";  from = Math.floor(new Date(now.getFullYear(), 0, 1).getTime() / 1000); break;
-    case "ALL": interval = "1mo"; from = 0; break;
-  }
-  return { interval, from, to };
-}
-
-async function fetchYahooCandles(symbol: string, range: Range): Promise<Candle[]> {
-  const { interval, from, to } = rangeToParams(range);
-  const periodPart = from > 0 ? `period1=${from}&period2=${to}` : `range=max`;
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=${interval}&${periodPart}`;
-  try {
-    const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 (compatible; FusionSynergy/1.0)" } });
-    if (!r.ok) return [];
-    const j: any = await r.json();
-    const result = j?.chart?.result?.[0];
-    if (!result) return [];
-    const ts: number[] = result.timestamp ?? [];
-    const q = result.indicators?.quote?.[0] ?? {};
-    const out: Candle[] = [];
-    for (let i = 0; i < ts.length; i++) {
-      const c = q.close?.[i];
-      if (c == null) continue;
-      out.push({
-        t: ts[i] * 1000,
-        o: q.open?.[i] ?? c, h: q.high?.[i] ?? c, l: q.low?.[i] ?? c, c,
-        v: q.volume?.[i] ?? 0,
-      });
-    }
-    return out;
-  } catch { return []; }
-}
-
 function fmpIntradayInterval(range: Range): string | null {
   switch (range) {
     case "1D": return "5min";
@@ -322,11 +293,12 @@ function fmpIntradayInterval(range: Range): string | null {
 
 async function fetchFmpCandles(symbol: string, range: Range): Promise<Candle[]> {
   if (!FMP_KEY) return [];
+  const s = fmpSym(symbol);
   try {
     const intra = fmpIntradayInterval(range);
     if (intra) {
       const r = await fetch(
-        `https://financialmodelingprep.com/api/v3/historical-chart/${intra}/${encodeURIComponent(symbol)}?apikey=${FMP_KEY}`,
+        `https://financialmodelingprep.com/stable/historical-chart/${intra}?symbol=${encodeURIComponent(s)}&apikey=${FMP_KEY}`,
       );
       if (!r.ok) return [];
       const j: any = await r.json();
@@ -353,11 +325,11 @@ async function fetchFmpCandles(symbol: string, range: Range): Promise<Candle[]> 
     }
     const iso = (d: Date) => d.toISOString().slice(0, 10);
     const r = await fetch(
-      `https://financialmodelingprep.com/api/v3/historical-price-full/${encodeURIComponent(symbol)}?from=${iso(fromDate)}&to=${iso(now)}&apikey=${FMP_KEY}`,
+      `https://financialmodelingprep.com/stable/historical-price-eod/full?symbol=${encodeURIComponent(s)}&from=${iso(fromDate)}&to=${iso(now)}&apikey=${FMP_KEY}`,
     );
     if (!r.ok) return [];
     const j: any = await r.json();
-    const hist: any[] = Array.isArray(j?.historical) ? j.historical : [];
+    const hist: any[] = Array.isArray(j) ? j : Array.isArray(j?.historical) ? j.historical : [];
     return hist
       .map((x: any) => ({
         t: new Date(x.date + "T00:00:00Z").getTime(),
@@ -368,15 +340,9 @@ async function fetchFmpCandles(symbol: string, range: Range): Promise<Candle[]> 
   } catch { return []; }
 }
 
-async function fetchCandlesAny(symbol: string, range: Range): Promise<Candle[]> {
-  const fmp = await fetchFmpCandles(symbol, range);
-  if (fmp.length > 1) return fmp;
-  return fetchYahooCandles(symbol, range);
-}
-
 export const getCandles = createServerFn({ method: "GET" })
   .inputValidator((data) => CandlesInput.parse(data))
-  .handler(async ({ data }) => ({ candles: await fetchCandlesAny(data.symbol, data.range as Range) }));
+  .handler(async ({ data }) => ({ candles: await fetchFmpCandles(data.symbol, data.range as Range) }));
 
 // ---------------- Portfolio history ----------------
 
@@ -398,7 +364,7 @@ export const getPortfolioHistory = createServerFn({ method: "POST" })
     const all = await Promise.all(
       data.positions.map(async (p) => ({
         shares: p.shares,
-        candles: await fetchCandlesAny(p.symbol, data.range as Range),
+        candles: await fetchFmpCandles(p.symbol, data.range as Range),
       })),
     );
     const tsSet = new Set<number>();
@@ -458,12 +424,10 @@ export type CompanyStats = {
 const SymbolInput = z.object({ symbol: z.string().min(1).max(20) });
 
 function computeMarketState(): "REGULAR" | "PRE" | "POST" | "CLOSED" {
-  // Naive US/Eastern check using UTC offset of -4 (DST) approximation.
   const now = new Date();
   const utc = now.getUTCHours() * 60 + now.getUTCMinutes();
   const day = now.getUTCDay();
   if (day === 0 || day === 6) return "CLOSED";
-  // ET ≈ UTC-4. Pre 4:00 ET (08:00 UTC) → 9:30 ET (13:30 UTC); regular until 16:00 ET (20:00 UTC); post until 20:00 ET (00:00 UTC).
   if (utc >= 480 && utc < 810) return "PRE";
   if (utc >= 810 && utc < 1200) return "REGULAR";
   if (utc >= 1200 && utc < 1440) return "POST";
@@ -474,38 +438,41 @@ export const getCompanyStats = createServerFn({ method: "GET" })
   .inputValidator((data) => SymbolInput.parse(data))
   .handler(async ({ data }): Promise<{ stats: CompanyStats | null }> => {
     if (!FMP_KEY) return { stats: null };
+    const s = fmpSym(data.symbol);
     try {
       const [profileRes, quoteRes] = await Promise.all([
-        fetch(`https://financialmodelingprep.com/api/v3/profile/${encodeURIComponent(data.symbol)}?apikey=${FMP_KEY}`),
-        fetch(`https://financialmodelingprep.com/api/v3/quote/${encodeURIComponent(data.symbol)}?apikey=${FMP_KEY}`),
+        fetch(`https://financialmodelingprep.com/stable/profile?symbol=${encodeURIComponent(s)}&apikey=${FMP_KEY}`),
+        fetch(`https://financialmodelingprep.com/stable/quote?symbol=${encodeURIComponent(s)}&apikey=${FMP_KEY}`),
       ]);
       const profileArr: any = profileRes.ok ? await profileRes.json() : [];
       const quoteArr: any = quoteRes.ok ? await quoteRes.json() : [];
       const p = Array.isArray(profileArr) ? profileArr[0] : null;
       const q = Array.isArray(quoteArr) ? quoteArr[0] : null;
       if (!p && !q) return { stats: null };
+      const rangeStr = String(p?.range ?? "");
+      const [rLow, rHigh] = rangeStr.split("-").map((x) => Number(x.trim()));
       const stats: CompanyStats = {
         symbol: data.symbol.toUpperCase(),
         name: p?.companyName ?? q?.name ?? data.symbol,
         logo: p?.image ?? `https://financialmodelingprep.com/image-stock/${data.symbol.toUpperCase()}.png`,
-        exchange: p?.exchangeShortName ?? q?.exchange ?? "",
+        exchange: p?.exchange ?? q?.exchange ?? "",
         sector: p?.sector ?? "",
         industry: p?.industry ?? "",
-        marketCap: Number(p?.mktCap ?? q?.marketCap ?? 0),
-        pe: Number(q?.pe ?? p?.pe ?? 0),
-        avgVolume: Number(q?.avgVolume ?? 0),
+        marketCap: Number(p?.marketCap ?? q?.marketCap ?? 0),
+        pe: Number(q?.pe ?? 0),
+        avgVolume: Number(p?.averageVolume ?? q?.avgVolume ?? 0),
         open: Number(q?.open ?? 0),
         prevClose: Number(q?.previousClose ?? 0),
         dayLow: Number(q?.dayLow ?? 0),
         dayHigh: Number(q?.dayHigh ?? 0),
-        price: Number(q?.price ?? 0),
-        change: Number(q?.change ?? 0),
-        changePct: Number(q?.changesPercentage ?? 0),
+        price: Number(q?.price ?? p?.price ?? 0),
+        change: Number(q?.change ?? p?.change ?? 0),
+        changePct: Number(q?.changePercentage ?? p?.changePercentage ?? 0),
         description: String(p?.description ?? ""),
         ceo: String(p?.ceo ?? ""),
         beta: Number(p?.beta ?? 0),
-        high52: Number(q?.yearHigh ?? p?.range?.split("-")?.[1] ?? 0),
-        low52: Number(q?.yearLow ?? p?.range?.split("-")?.[0] ?? 0),
+        high52: Number(q?.yearHigh ?? (Number.isFinite(rHigh) ? rHigh : 0)),
+        low52: Number(q?.yearLow ?? (Number.isFinite(rLow) ? rLow : 0)),
         website: String(p?.website ?? ""),
         marketState: computeMarketState(),
       };
