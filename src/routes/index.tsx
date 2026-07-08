@@ -13,10 +13,10 @@ import { Sparkles, ArrowRight, MessageSquare, Receipt, TrendingUp, Settings as S
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "FusionSynergy — Where Intelligence Meets Finance" },
-      { name: "description", content: "FusionSynergy: AI-powered practice trading. Track markets, learn the ropes, and chat with FUSE AI." },
-      { property: "og:title", content: "FusionSynergy — Where Intelligence Meets Finance" },
-      { property: "og:description", content: "AI-powered practice trading, live markets, and FUSE AI — built for beginners and experts." },
+      { title: "Ascend" },
+      { name: "description", content: "- FUSE Brokerage App is an AI-powered fintech platform for financial intelligence and simulated trading." },
+      { property: "og:title", content: "Ascend" },
+      { property: "og:description", content: "- FUSE Brokerage App is an AI-powered fintech platform for financial intelligence and simulated trading." },
       { property: "og:url", content: "https://fuse-brokerage.lovable.app/" },
     ],
     links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/" }],
