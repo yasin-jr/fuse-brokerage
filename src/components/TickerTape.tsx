@@ -3,9 +3,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { getQuotes } from "@/lib/market.functions";
 
 const SYMBOLS = [
-  "BTC-USD", "ETH-USD", "SOL-USD",
-  "^GSPC", "^IXIC", "^DJI", "^FTSE",
-  "GC=F", "CL=F",
+  "^GSPC", "^IXIC", "^DJI", "^FTSE", "^RUT",
+  "BTC-USD", "ETH-USD", "SOL-USD", "GC=F",
   "NVDA", "AAPL", "MSFT", "TSLA", "GOOGL", "AMZN", "META", "AMD", "NFLX", "JPM", "V",
 ];
 
