@@ -16,7 +16,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/stock/$symbol")({
   head: ({ params }) => ({
     meta: [
-      { title: `${params.symbol.toUpperCase()} — FusionSynergy` },
+      { title: `${params.symbol.toUpperCase()} — Ascend` },
       { name: "description", content: `Live chart, equity position and full stats for ${params.symbol.toUpperCase()}.` },
     ],
   }),

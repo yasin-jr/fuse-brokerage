@@ -1,4 +1,4 @@
-// Starter data shapes for FusionSynergy. New accounts start clean — the live engine fills these.
+// Starter data shapes for Ascend. New accounts start clean — the live engine fills these.
 
 export type Pillar = {
   ticker: string;

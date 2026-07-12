@@ -10,7 +10,7 @@ import { LOGO_URL } from "@/lib/catalog";
 export const Route = createFileRoute("/invest/largest-cap")({
   head: () => ({
     meta: [
-      { title: "Largest by market cap — FusionSynergy" },
+      { title: "Largest by market cap — Ascend" },
       { name: "description", content: "The 20 largest US-listed companies by market capitalization, updated daily." },
     ],
   }),

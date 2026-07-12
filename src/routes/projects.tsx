@@ -9,18 +9,18 @@ import {
 export const Route = createFileRoute("/projects")({
   head: () => ({
     meta: [
-      { title: "Our Projects — FusionSynergy" },
-      { name: "description", content: "Explore FusionSynergy's flagship projects and what's coming next at the intersection of quantum computing, AI, and frontier science." },
-      { property: "og:title", content: "Our Projects — FusionSynergy" },
-      { property: "og:description", content: "Flagship and upcoming FusionSynergy projects across fintech, quantum, and AI." },
-      { property: "og:url", content: "https://fuse-brokerage.lovable.app/projects" },
+      { title: "Our Projects — Ascend" },
+      { name: "description", content: "Explore Ascend's flagship projects and what's coming next at the intersection of quantum computing, AI, and frontier science." },
+      { property: "og:title", content: "Our Projects — Ascend" },
+      { property: "og:description", content: "Flagship and upcoming Ascend projects across fintech, quantum, and AI." },
+      { property: "og:url", content: "https://ascend-invests.lovable.app/projects" },
     ],
-    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/projects" }],
+    links: [{ rel: "canonical", href: "https://ascend-invests.lovable.app/projects" }],
   }),
   component: ProjectsPage,
 });
 
-const FUSIONSYNERGY_URL = "https://fusionsynergy.base44.app";
+const FUSIONSYNERGY_URL = "https://ascend.base44.app";
 
 const PROJECTS = [
   {
@@ -46,7 +46,7 @@ const PROJECTS = [
   },
   {
     icon: Globe,
-    name: "FusionSynergy Research",
+    name: "Ascend Research",
     tag: "Public reports",
     desc: "Macro notes, sector deep-dives, and quantitative dashboards — published openly.",
     href: FUSIONSYNERGY_URL,
@@ -99,7 +99,7 @@ function ProjectsPage() {
         <header>
           <h1 className="text-2xl font-semibold">Our Projects</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Everything FusionSynergy is building under one roof.
+            Everything Ascend is building under one roof.
           </p>
         </header>
 
@@ -141,11 +141,11 @@ function ProjectsPage() {
 
           <div className="glass rounded-2xl p-5 text-sm leading-relaxed text-muted-foreground space-y-3">
             <p>
-              FusionSynergy is just getting started. We're quietly building at the intersection of
+              Ascend is just getting started. We're quietly building at the intersection of
               quantum computing, AI, and industries that matter — from biotech to cybersecurity.
             </p>
             <p>
-              FusionSynergy was never just a fintech platform. It's a long-term bet on what happens
+              Ascend was never just a fintech platform. It's a long-term bet on what happens
               when quantum computing, multi-agent AI, and frontier science collide. What you see
               today is version one. What we're building next operates at a different level entirely.
             </p>
@@ -192,7 +192,7 @@ function ProjectsPage() {
             rel="noopener noreferrer"
             className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-fuse-gradient px-4 py-2 text-sm font-semibold text-primary-foreground"
           >
-            Visit FusionSynergy <ExternalLink className="h-3.5 w-3.5" />
+            Visit Ascend <ExternalLink className="h-3.5 w-3.5" />
           </a>
         </div>
       </div>

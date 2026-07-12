@@ -14,7 +14,7 @@ import { Heart, X } from "lucide-react";
 export const Route = createFileRoute("/watchlist")({
   head: () => ({
     meta: [
-      { title: "Watchlist — FusionSynergy" },
+      { title: "Watchlist — Ascend" },
       { name: "description", content: "Track companies you're interested in with live prices." },
     ],
   }),

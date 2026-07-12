@@ -5,13 +5,13 @@ import { BackBar } from "@/components/BackBar";
 export const Route = createFileRoute("/learn")({
   head: () => ({
     meta: [
-      { title: "Learn — FusionSynergy" },
+      { title: "Learn — Ascend" },
       { name: "description", content: "Short, casual lessons to help new traders find their footing in the markets." },
-      { property: "og:title", content: "Learn — FusionSynergy" },
-      { property: "og:description", content: "Bite-size trading and markets lessons from FusionSynergy." },
-      { property: "og:url", content: "https://fuse-brokerage.lovable.app/learn" },
+      { property: "og:title", content: "Learn — Ascend" },
+      { property: "og:description", content: "Bite-size trading and markets lessons from Ascend." },
+      { property: "og:url", content: "https://ascend-invests.lovable.app/learn" },
     ],
-    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/learn" }],
+    links: [{ rel: "canonical", href: "https://ascend-invests.lovable.app/learn" }],
   }),
   component: () => (
     <AppShell>

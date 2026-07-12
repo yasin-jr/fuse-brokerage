@@ -10,13 +10,13 @@ import { X, Loader2 } from "lucide-react";
 export const Route = createFileRoute("/settings")({
   head: () => ({
     meta: [
-      { title: "Settings — FusionSynergy" },
-      { name: "description", content: "Manage your FusionSynergy account, profile, appearance, and trading preferences." },
-      { property: "og:title", content: "Settings — FusionSynergy" },
-      { property: "og:description", content: "Manage your FusionSynergy account and preferences." },
-      { property: "og:url", content: "https://fuse-brokerage.lovable.app/settings" },
+      { title: "Settings — Ascend" },
+      { name: "description", content: "Manage your Ascend account, profile, appearance, and trading preferences." },
+      { property: "og:title", content: "Settings — Ascend" },
+      { property: "og:description", content: "Manage your Ascend account and preferences." },
+      { property: "og:url", content: "https://ascend-invests.lovable.app/settings" },
     ],
-    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/settings" }],
+    links: [{ rel: "canonical", href: "https://ascend-invests.lovable.app/settings" }],
   }),
   component: SettingsPage,
 });

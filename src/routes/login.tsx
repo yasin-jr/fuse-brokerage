@@ -9,13 +9,13 @@ import { Mail, Lock, Loader2, User } from "lucide-react";
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Sign in — FusionSynergy" },
-      { name: "description", content: "Sign in or create your FusionSynergy account to start practice trading and chat with FUSE AI." },
-      { property: "og:title", content: "Sign in — FusionSynergy" },
-      { property: "og:description", content: "Access your FusionSynergy account — AI-powered practice trading and live market intelligence." },
-      { property: "og:url", content: "https://fuse-brokerage.lovable.app/login" },
+      { title: "Sign in — Ascend" },
+      { name: "description", content: "Sign in or create your Ascend account to start practice trading and chat with FUSE AI." },
+      { property: "og:title", content: "Sign in — Ascend" },
+      { property: "og:description", content: "Access your Ascend account — AI-powered practice trading and live market intelligence." },
+      { property: "og:url", content: "https://ascend-invests.lovable.app/login" },
     ],
-    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/login" }],
+    links: [{ rel: "canonical", href: "https://ascend-invests.lovable.app/login" }],
   }),
   component: LoginPage,
 });
@@ -192,7 +192,7 @@ function LoginPage() {
 
 
         <p className="mt-auto pt-8 text-center text-[10px] text-muted-foreground">
-          By continuing, you agree to FusionSynergy's Terms & Privacy.
+          By continuing, you agree to Ascend's Terms & Privacy.
         </p>
       </div>
     </div>

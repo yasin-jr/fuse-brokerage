@@ -4,7 +4,7 @@ import { claimDifficulty, type Difficulty, DIFFICULTY_TIERS } from "@/lib/profil
 import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/onboarding/difficulty")({
-  head: () => ({ meta: [{ title: "Pick your difficulty — FusionSynergy" }] }),
+  head: () => ({ meta: [{ title: "Pick your difficulty — Ascend" }] }),
   component: DifficultyPage,
 });
 

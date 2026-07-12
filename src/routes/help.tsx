@@ -11,13 +11,13 @@ const faqs = [
 export const Route = createFileRoute("/help")({
   head: () => ({
     meta: [
-      { title: "Help & FAQ — FusionSynergy" },
-      { name: "description", content: "Answers to common questions about FusionSynergy: difficulty, paper trading, and FUSE AI." },
-      { property: "og:title", content: "Help & FAQ — FusionSynergy" },
-      { property: "og:description", content: "Common questions about FusionSynergy: difficulty modes, paper trading, and FUSE AI." },
-      { property: "og:url", content: "https://fuse-brokerage.lovable.app/help" },
+      { title: "Help & FAQ — Ascend" },
+      { name: "description", content: "Answers to common questions about Ascend: difficulty, paper trading, and FUSE AI." },
+      { property: "og:title", content: "Help & FAQ — Ascend" },
+      { property: "og:description", content: "Common questions about Ascend: difficulty modes, paper trading, and FUSE AI." },
+      { property: "og:url", content: "https://ascend-invests.lovable.app/help" },
     ],
-    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/help" }],
+    links: [{ rel: "canonical", href: "https://ascend-invests.lovable.app/help" }],
     scripts: [
       {
         type: "application/ld+json",

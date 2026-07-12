@@ -9,13 +9,13 @@ import { Receipt } from "lucide-react";
 export const Route = createFileRoute("/orders")({
   head: () => ({
     meta: [
-      { title: "Orders — FusionSynergy" },
-      { name: "description", content: "Your full trade history on FusionSynergy — every buy and sell across your portfolio." },
-      { property: "og:title", content: "Orders — FusionSynergy" },
-      { property: "og:description", content: "Track every order across your FusionSynergy portfolio." },
-      { property: "og:url", content: "https://fuse-brokerage.lovable.app/orders" },
+      { title: "Orders — Ascend" },
+      { name: "description", content: "Your full trade history on Ascend — every buy and sell across your portfolio." },
+      { property: "og:title", content: "Orders — Ascend" },
+      { property: "og:description", content: "Track every order across your Ascend portfolio." },
+      { property: "og:url", content: "https://ascend-invests.lovable.app/orders" },
     ],
-    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/orders" }],
+    links: [{ rel: "canonical", href: "https://ascend-invests.lovable.app/orders" }],
   }),
   component: OrdersPage,
 });

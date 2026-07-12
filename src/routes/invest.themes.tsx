@@ -6,7 +6,7 @@ import { THEMES } from "@/lib/themes";
 export const Route = createFileRoute("/invest/themes")({
   head: () => ({
     meta: [
-      { title: "Themes — FusionSynergy" },
+      { title: "Themes — Ascend" },
       { name: "description", content: "Curated investment themes — AI, EVs, Energy, Healthcare, Dividends and more." },
     ],
   }),

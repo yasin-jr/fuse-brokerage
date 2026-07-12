@@ -11,14 +11,14 @@ type Msg = ChatMsg;
 const SUGGESTIONS = [
   "What's moving the market today?",
   "Explain $NVDA in simple terms",
-  "What is FusionSynergy?",
+  "What is Ascend?",
   "How do I start practice trading?",
 ];
 
 const GREETING: Msg = {
   role: "assistant",
   content:
-    "Hey! I'm **FUSE**, your FusionSynergy sidekick. Ask me about a stock, what's moving the market today, or how anything in the app works. Where do you want to start?",
+    "Hey! I'm **FUSE**, your Ascend sidekick. Ask me about a stock, what's moving the market today, or how anything in the app works. Where do you want to start?",
 };
 
 export function FuseChat() {
@@ -74,7 +74,7 @@ export function FuseChat() {
           </div>
           <div>
             <h2 className="text-sm font-semibold tracking-wide">FUSE AI</h2>
-            <p className="text-xs text-muted-foreground">FusionSynergy Intelligence Engine</p>
+            <p className="text-xs text-muted-foreground">Ascend Intelligence Engine</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -129,7 +129,7 @@ export function FuseChat() {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask FUSE AI about markets, tech, or FusionSynergy…"
+          placeholder="Ask FUSE AI about markets, tech, or Ascend…"
           className="flex-1 rounded-xl bg-input/50 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-ring"
         />
         <button

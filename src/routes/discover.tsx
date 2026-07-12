@@ -5,13 +5,13 @@ import { BackBar } from "@/components/BackBar";
 export const Route = createFileRoute("/discover")({
   head: () => ({
     meta: [
-      { title: "Discover — FusionSynergy" },
-      { name: "description", content: "Trending stocks, curated themes and screeners — discover your next idea on FusionSynergy." },
-      { property: "og:title", content: "Discover — FusionSynergy" },
+      { title: "Discover — Ascend" },
+      { name: "description", content: "Trending stocks, curated themes and screeners — discover your next idea on Ascend." },
+      { property: "og:title", content: "Discover — Ascend" },
       { property: "og:description", content: "Trending stocks, themes and screeners powered by FUSE Intelligence." },
-      { property: "og:url", content: "https://fuse-brokerage.lovable.app/discover" },
+      { property: "og:url", content: "https://ascend-invests.lovable.app/discover" },
     ],
-    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/discover" }],
+    links: [{ rel: "canonical", href: "https://ascend-invests.lovable.app/discover" }],
   }),
   component: () => (
     <AppShell>

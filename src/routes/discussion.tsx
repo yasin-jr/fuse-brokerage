@@ -12,13 +12,13 @@ import { MessageSquare, Heart, Trash2, Plus } from "lucide-react";
 export const Route = createFileRoute("/discussion")({
   head: () => ({
     meta: [
-      { title: "Community — FusionSynergy" },
-      { name: "description", content: "Public community feed — share ideas, post photos, and see what FusionSynergy traders are watching." },
-      { property: "og:title", content: "Community — FusionSynergy" },
+      { title: "Community — Ascend" },
+      { name: "description", content: "Public community feed — share ideas, post photos, and see what Ascend traders are watching." },
+      { property: "og:title", content: "Community — Ascend" },
       { property: "og:description", content: "Public discussion feed for trading ideas." },
-      { property: "og:url", content: "https://fuse-brokerage.lovable.app/discussion" },
+      { property: "og:url", content: "https://ascend-invests.lovable.app/discussion" },
     ],
-    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/discussion" }],
+    links: [{ rel: "canonical", href: "https://ascend-invests.lovable.app/discussion" }],
   }),
   component: DiscussionPage,
 });
