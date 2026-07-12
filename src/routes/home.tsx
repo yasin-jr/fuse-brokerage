@@ -9,17 +9,18 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { PILLARS, PORTFOLIO, RECENT_ORDERS } from "@/lib/mock-data";
 import { usePosts } from "@/lib/profile-store";
 import { Sparkles, ArrowRight, MessageSquare, Receipt, TrendingUp, Settings as SettingsIcon } from "lucide-react";
+import { MarketStatus } from "@/components/MarketStatus";
 
 export const Route = createFileRoute("/home")({
   head: () => ({
     meta: [
-      { title: "Ascend" },
-      { name: "description", content: "- FUSE Brokerage App is an AI-powered fintech platform for financial intelligence and simulated trading." },
-      { property: "og:title", content: "Ascend" },
-      { property: "og:description", content: "- FUSE Brokerage App is an AI-powered fintech platform for financial intelligence and simulated trading." },
-      { property: "og:url", content: "https://fuse-brokerage.lovable.app/" },
+      { title: "Home — Ascend" },
+      { name: "description", content: "Your Ascend dashboard — practice portfolio, live markets, and FUSE AI insights." },
+      { property: "og:title", content: "Home — Ascend" },
+      { property: "og:description", content: "Your Ascend dashboard — practice portfolio, live markets, and FUSE AI insights." },
+      { property: "og:url", content: "https://ascend-invests.lovable.app/home" },
     ],
-    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/" }],
+    links: [{ rel: "canonical", href: "https://ascend-invests.lovable.app/home" }],
   }),
   component: HomePage,
 });
@@ -34,15 +35,13 @@ function HomePage() {
   return (
     <AppShell>
       {/* Top bar with logo */}
-      <div className="mx-auto flex max-w-3xl items-center justify-between px-4 pt-5">
-        <Link to="/" className="flex items-center gap-2">
+      <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 pt-5">
+        <Link to="/home" className="flex min-w-0 items-center gap-2">
           <Logo className="h-9 w-9 rounded-xl" />
-          <span className="text-base tracking-tight">
-            <span className="brand-fusion">Fusion</span>
-            <span className="brand-synergy">Synergy</span>
-          </span>
+          <span className="truncate text-base font-bold tracking-tight">Ascend</span>
         </Link>
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
+          <MarketStatus />
           <ThemeToggle />
           <Link
             to="/settings"
