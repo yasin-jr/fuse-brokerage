@@ -10,7 +10,7 @@ import { PILLARS, PORTFOLIO, RECENT_ORDERS } from "@/lib/mock-data";
 import { usePosts } from "@/lib/profile-store";
 import { Sparkles, ArrowRight, MessageSquare, Receipt, TrendingUp, Settings as SettingsIcon } from "lucide-react";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/home")({
   head: () => ({
     meta: [
       { title: "Ascend" },

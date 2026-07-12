@@ -20,11 +20,11 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LearnRouteImport } from './routes/learn'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as InvestRouteImport } from './routes/invest'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as DiscussionRouteImport } from './routes/discussion'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as AiRouteImport } from './routes/ai'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as StockSymbolRouteImport } from './routes/stock.$symbol'
 import { Route as OnboardingDifficultyRouteImport } from './routes/onboarding.difficulty'
 import { Route as InvestThemesRouteImport } from './routes/invest.themes'
@@ -87,6 +87,11 @@ const InvestRoute = InvestRouteImport.update({
   path: '/invest',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HelpRoute = HelpRouteImport.update({
   id: '/help',
   path: '/help',
@@ -105,11 +110,6 @@ const DiscoverRoute = DiscoverRouteImport.update({
 const AiRoute = AiRouteImport.update({
   id: '/ai',
   path: '/ai',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StockSymbolRoute = StockSymbolRouteImport.update({
@@ -144,11 +144,11 @@ const InvestMoversKindRoute = InvestMoversKindRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
   '/ai': typeof AiRoute
   '/discover': typeof DiscoverRoute
   '/discussion': typeof DiscussionRoute
   '/help': typeof HelpRoute
+  '/home': typeof HomeRoute
   '/invest': typeof InvestRouteWithChildren
   '/leaderboard': typeof LeaderboardRoute
   '/learn': typeof LearnRoute
@@ -168,11 +168,11 @@ export interface FileRoutesByFullPath {
   '/invest/theme/$themeId': typeof InvestThemeThemeIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/ai': typeof AiRoute
   '/discover': typeof DiscoverRoute
   '/discussion': typeof DiscussionRoute
   '/help': typeof HelpRoute
+  '/home': typeof HomeRoute
   '/invest': typeof InvestRouteWithChildren
   '/leaderboard': typeof LeaderboardRoute
   '/learn': typeof LearnRoute
@@ -193,11 +193,11 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/ai': typeof AiRoute
   '/discover': typeof DiscoverRoute
   '/discussion': typeof DiscussionRoute
   '/help': typeof HelpRoute
+  '/home': typeof HomeRoute
   '/invest': typeof InvestRouteWithChildren
   '/leaderboard': typeof LeaderboardRoute
   '/learn': typeof LearnRoute
@@ -219,11 +219,11 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/ai'
     | '/discover'
     | '/discussion'
     | '/help'
+    | '/home'
     | '/invest'
     | '/leaderboard'
     | '/learn'
@@ -243,11 +243,11 @@ export interface FileRouteTypes {
     | '/invest/theme/$themeId'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/ai'
     | '/discover'
     | '/discussion'
     | '/help'
+    | '/home'
     | '/invest'
     | '/leaderboard'
     | '/learn'
@@ -267,11 +267,11 @@ export interface FileRouteTypes {
     | '/invest/theme/$themeId'
   id:
     | '__root__'
-    | '/'
     | '/ai'
     | '/discover'
     | '/discussion'
     | '/help'
+    | '/home'
     | '/invest'
     | '/leaderboard'
     | '/learn'
@@ -292,11 +292,11 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   AiRoute: typeof AiRoute
   DiscoverRoute: typeof DiscoverRoute
   DiscussionRoute: typeof DiscussionRoute
   HelpRoute: typeof HelpRoute
+  HomeRoute: typeof HomeRoute
   InvestRoute: typeof InvestRouteWithChildren
   LeaderboardRoute: typeof LeaderboardRoute
   LearnRoute: typeof LearnRoute
@@ -391,6 +391,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InvestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/help': {
       id: '/help'
       path: '/help'
@@ -417,13 +424,6 @@ declare module '@tanstack/react-router' {
       path: '/ai'
       fullPath: '/ai'
       preLoaderRoute: typeof AiRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/stock/$symbol': {
@@ -489,11 +489,11 @@ const InvestRouteWithChildren =
   InvestRoute._addFileChildren(InvestRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AiRoute: AiRoute,
   DiscoverRoute: DiscoverRoute,
   DiscussionRoute: DiscussionRoute,
   HelpRoute: HelpRoute,
+  HomeRoute: HomeRoute,
   InvestRoute: InvestRouteWithChildren,
   LeaderboardRoute: LeaderboardRoute,
   LearnRoute: LearnRoute,
