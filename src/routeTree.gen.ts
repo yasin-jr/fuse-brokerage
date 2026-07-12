@@ -25,6 +25,7 @@ import { Route as HelpRouteImport } from './routes/help'
 import { Route as DiscussionRouteImport } from './routes/discussion'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as AiRouteImport } from './routes/ai'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as StockSymbolRouteImport } from './routes/stock.$symbol'
 import { Route as OnboardingDifficultyRouteImport } from './routes/onboarding.difficulty'
 import { Route as InvestThemesRouteImport } from './routes/invest.themes'
@@ -112,6 +113,11 @@ const AiRoute = AiRouteImport.update({
   path: '/ai',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StockSymbolRoute = StockSymbolRouteImport.update({
   id: '/stock/$symbol',
   path: '/stock/$symbol',
@@ -144,6 +150,7 @@ const InvestMoversKindRoute = InvestMoversKindRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/ai': typeof AiRoute
   '/discover': typeof DiscoverRoute
   '/discussion': typeof DiscussionRoute
@@ -168,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/invest/theme/$themeId': typeof InvestThemeThemeIdRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/ai': typeof AiRoute
   '/discover': typeof DiscoverRoute
   '/discussion': typeof DiscussionRoute
@@ -193,6 +201,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/ai': typeof AiRoute
   '/discover': typeof DiscoverRoute
   '/discussion': typeof DiscussionRoute
@@ -219,6 +228,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/ai'
     | '/discover'
     | '/discussion'
@@ -243,6 +253,7 @@ export interface FileRouteTypes {
     | '/invest/theme/$themeId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/ai'
     | '/discover'
     | '/discussion'
@@ -267,6 +278,7 @@ export interface FileRouteTypes {
     | '/invest/theme/$themeId'
   id:
     | '__root__'
+    | '/'
     | '/ai'
     | '/discover'
     | '/discussion'
@@ -292,6 +304,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AiRoute: typeof AiRoute
   DiscoverRoute: typeof DiscoverRoute
   DiscussionRoute: typeof DiscussionRoute
@@ -426,6 +439,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/stock/$symbol': {
       id: '/stock/$symbol'
       path: '/stock/$symbol'
@@ -489,6 +509,7 @@ const InvestRouteWithChildren =
   InvestRoute._addFileChildren(InvestRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AiRoute: AiRoute,
   DiscoverRoute: DiscoverRoute,
   DiscussionRoute: DiscussionRoute,
