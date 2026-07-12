@@ -97,10 +97,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Organization",
-          name: "FusionSynergy",
-          url: "https://fuse-brokerage.lovable.app",
-          logo: "https://fuse-brokerage.lovable.app/favicon.ico",
-          sameAs: ["https://fusionsynergy.base44.app"],
+          name: "Ascend",
+          url: "https://ascend-invests.lovable.app",
+          logo: "https://ascend-invests.lovable.app/favicon.ico",
+          parentOrganization: { "@type": "Organization", name: "FusionSynergy" },
         }),
       },
       {
@@ -108,8 +108,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
-          name: "FusionSynergy",
-          url: "https://fuse-brokerage.lovable.app",
+          name: "Ascend",
+          url: "https://ascend-invests.lovable.app",
         }),
       },
     ],
