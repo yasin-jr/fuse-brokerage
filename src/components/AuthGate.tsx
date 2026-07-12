@@ -4,7 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { loadProfile } from "@/lib/profile-store";
 import { hydrateFromSupabase } from "@/lib/profile-sync";
 
-const PUBLIC = ["/login", "/onboarding/difficulty"];
+/** Routes that render without an authenticated user. */
+const PUBLIC = ["/", "/login", "/onboarding/difficulty"];
+
+function isPublicPath(path: string) {
+  if (path === "/") return true;
+  return PUBLIC.some((p) => p !== "/" && path.startsWith(p));
+}
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
@@ -16,18 +22,21 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
     const check = async () => {
       const { data } = await supabase.auth.getSession();
-      const isPublic = PUBLIC.some((p) => path.startsWith(p));
+      const isPublic = isPublicPath(path);
       if (cancelled) return;
       if (!data.session) {
+        // No session — only redirect if user tried to reach a protected route.
         if (!isPublic) navigate({ to: "/login" });
         return;
       }
-      // Signed in — hydrate Supabase → local cache, then route by difficulty.
+      // Signed in — hydrate cache, then route by difficulty.
       await hydrateFromSupabase();
       if (cancelled) return;
-      setTick((n) => n + 1); // re-render any subscribers after hydration
+      setTick((n) => n + 1);
       const p = loadProfile();
-      if (!p.difficulty && !isPublic) navigate({ to: "/onboarding/difficulty" });
+      if (!p.difficulty && !path.startsWith("/onboarding")) {
+        navigate({ to: "/onboarding/difficulty" });
+      }
     };
 
     check();
