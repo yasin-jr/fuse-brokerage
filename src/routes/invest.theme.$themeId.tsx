@@ -14,7 +14,7 @@ export const Route = createFileRoute("/invest/theme/$themeId")({
     const t = findTheme(params.themeId);
     return {
       meta: [
-        { title: `${t?.name ?? "Theme"} — FusionSynergy` },
+        { title: `${t?.name ?? "Theme"} — Ascend` },
         { name: "description", content: t?.description ?? "Theme detail" },
       ],
     };

@@ -16,7 +16,7 @@ const TITLES: Record<string, string> = {
 export const Route = createFileRoute("/invest/movers/$kind")({
   head: ({ params }) => ({
     meta: [
-      { title: `${TITLES[params.kind] ?? "Movers"} — FusionSynergy` },
+      { title: `${TITLES[params.kind] ?? "Movers"} — Ascend` },
       { name: "description", content: `Today's ${TITLES[params.kind]?.toLowerCase() ?? "market movers"} across US equities.` },
     ],
   }),

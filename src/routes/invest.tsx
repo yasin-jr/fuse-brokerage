@@ -13,13 +13,13 @@ import { Search, Sparkles, ChevronRight, TrendingUp, TrendingDown, Activity } fr
 export const Route = createFileRoute("/invest")({
   head: () => ({
     meta: [
-      { title: "Invest — FusionSynergy" },
+      { title: "Invest — Ascend" },
       { name: "description", content: "Browse the largest companies, top movers, sector heatmap, and curated themes. Search any of 30,000+ tickers." },
-      { property: "og:title", content: "Invest — FusionSynergy" },
+      { property: "og:title", content: "Invest — Ascend" },
       { property: "og:description", content: "Largest companies, top movers, sector heatmap and curated themes." },
-      { property: "og:url", content: "https://fuse-brokerage.lovable.app/invest" },
+      { property: "og:url", content: "https://ascend-invests.lovable.app/invest" },
     ],
-    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/invest" }],
+    links: [{ rel: "canonical", href: "https://ascend-invests.lovable.app/invest" }],
   }),
   component: InvestPage,
 });

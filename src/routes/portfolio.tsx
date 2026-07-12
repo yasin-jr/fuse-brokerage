@@ -14,13 +14,13 @@ import { PieChart, Trophy } from "lucide-react";
 export const Route = createFileRoute("/portfolio")({
   head: () => ({
     meta: [
-      { title: "Portfolio — FusionSynergy" },
-      { name: "description", content: "Your locked starting capital, points and live holdings on FusionSynergy." },
-      { property: "og:title", content: "Portfolio — FusionSynergy" },
+      { title: "Portfolio — Ascend" },
+      { name: "description", content: "Your locked starting capital, points and live holdings on Ascend." },
+      { property: "og:title", content: "Portfolio — Ascend" },
       { property: "og:description", content: "Locked starting capital, points and live holdings." },
-      { property: "og:url", content: "https://fuse-brokerage.lovable.app/portfolio" },
+      { property: "og:url", content: "https://ascend-invests.lovable.app/portfolio" },
     ],
-    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/portfolio" }],
+    links: [{ rel: "canonical", href: "https://ascend-invests.lovable.app/portfolio" }],
   }),
   component: PortfolioPage,
 });

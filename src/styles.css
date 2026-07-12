@@ -28,8 +28,11 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-fuse-cyan: var(--fuse-cyan);
-  --color-fuse-violet: var(--fuse-violet);
+  --color-sapphire: var(--sapphire);
+  --color-berry: var(--berry);
+  --color-midnight: var(--midnight);
+  --color-fuse-cyan: var(--sapphire);
+  --color-fuse-violet: var(--berry);
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
   --animate-ticker: ticker 60s linear infinite;
@@ -40,38 +43,84 @@
   to   { transform: translateX(-50%); }
 }
 
+@keyframes ascend-rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ascend-glow {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
+}
+
 :root {
-  --radius: 0.75rem;
-  /* Deep onyx theme — matches FusionSynergy marketing site */
-  --background: oklch(0.10 0.015 240);
-  --foreground: oklch(0.97 0.01 220);
-  --card: oklch(0.14 0.02 240);
-  --card-foreground: oklch(0.97 0.01 220);
-  --popover: oklch(0.14 0.02 240);
-  --popover-foreground: oklch(0.97 0.01 220);
-  --primary: oklch(0.78 0.15 215);
-  --primary-foreground: oklch(0.10 0.015 240);
-  --secondary: oklch(0.18 0.02 240);
-  --secondary-foreground: oklch(0.97 0.01 220);
-  --muted: oklch(0.16 0.018 240);
-  --muted-foreground: oklch(0.66 0.02 230);
-  --accent: oklch(0.22 0.03 240);
-  --accent-foreground: oklch(0.97 0.01 220);
-  --destructive: oklch(0.62 0.22 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.28 0.02 240 / 0.5);
-  --input: oklch(0.22 0.02 240);
-  --ring: oklch(0.78 0.15 215);
+  --radius: 0.875rem;
 
-  --fuse-cyan: oklch(0.82 0.18 215);
-  --fuse-violet: oklch(0.70 0.18 280);
+  /* === ASCEND BRAND (dark, primary) ===============================
+     Midnight #040406 · Sapphire #0F52BA · Berry #990F4B
+  ================================================================= */
+  --sapphire: #0F52BA;
+  --berry: #990F4B;
+  --midnight: #040406;
 
-  --gradient-fuse: linear-gradient(135deg, var(--fuse-cyan), var(--primary) 50%, var(--fuse-violet));
+  --background: #040406;
+  --foreground: oklch(0.97 0.005 240);
+  --card: oklch(0.14 0.015 245);
+  --card-foreground: oklch(0.97 0.005 240);
+  --popover: oklch(0.12 0.015 245);
+  --popover-foreground: oklch(0.97 0.005 240);
+  --primary: #0F52BA;
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.16 0.015 245);
+  --secondary-foreground: oklch(0.97 0.005 240);
+  --muted: oklch(0.15 0.012 245);
+  --muted-foreground: oklch(0.66 0.015 240);
+  --accent: #990F4B;
+  --accent-foreground: oklch(0.99 0 0);
+  --destructive: oklch(0.60 0.22 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.30 0.02 245 / 0.35);
+  --input: oklch(0.18 0.015 245);
+  --ring: #0F52BA;
+
+  --gradient-ascend: linear-gradient(135deg, #0F52BA 0%, #4A7BC8 50%, #990F4B 100%);
+  --gradient-sapphire: linear-gradient(135deg, #0F52BA 0%, #1E6FE0 100%);
+  --gradient-berry: linear-gradient(135deg, #990F4B 0%, #C4266F 100%);
   --gradient-bg:
-    radial-gradient(ellipse at top, oklch(0.20 0.05 220) 0%, oklch(0.06 0.01 240) 70%),
-    oklch(0.06 0.01 240);
-  --shadow-glow: 0 0 50px -8px oklch(0.78 0.15 215 / 0.45);
+    radial-gradient(ellipse at top, oklch(0.14 0.05 260) 0%, #040406 65%),
+    #040406;
+  --shadow-glow: 0 0 60px -12px color-mix(in oklab, #0F52BA 55%, transparent);
+  --shadow-berry: 0 0 40px -12px color-mix(in oklab, #990F4B 45%, transparent);
+  --shadow-elegant: 0 20px 40px -20px oklch(0 0 0 / 0.8), 0 2px 6px -2px oklch(0 0 0 / 0.6);
   --shadow-soft: 0 10px 30px -12px oklch(0 0 0 / 0.7);
+}
+
+/* === Light theme (Ice White #EDF4F5) ============================= */
+html.light {
+  --background: #EDF4F5;
+  --foreground: oklch(0.18 0.02 245);
+  --card: #FFFFFF;
+  --card-foreground: oklch(0.18 0.02 245);
+  --popover: #FFFFFF;
+  --popover-foreground: oklch(0.18 0.02 245);
+  --primary: #0F52BA;
+  --primary-foreground: #FFFFFF;
+  --secondary: oklch(0.96 0.008 220);
+  --secondary-foreground: oklch(0.20 0.02 245);
+  --muted: oklch(0.94 0.008 220);
+  --muted-foreground: oklch(0.42 0.02 245);
+  --accent: #990F4B;
+  --accent-foreground: #FFFFFF;
+  --border: oklch(0.55 0.03 245 / 0.18);
+  --input: oklch(0.94 0.008 220);
+  --ring: #0F52BA;
+  --gradient-bg:
+    radial-gradient(ellipse at top, oklch(0.96 0.02 230) 0%, #EDF4F5 70%),
+    #EDF4F5;
+  --shadow-glow: 0 0 60px -12px color-mix(in oklab, #0F52BA 30%, transparent);
+  --shadow-berry: 0 0 40px -12px color-mix(in oklab, #990F4B 25%, transparent);
+  --shadow-elegant: 0 20px 40px -20px oklch(0.20 0.05 245 / 0.25), 0 2px 6px -2px oklch(0.20 0.05 245 / 0.10);
+  --shadow-soft: 0 10px 30px -12px oklch(0 0 0 / 0.10);
 }
 
 @layer base {
@@ -82,63 +131,50 @@
     background-attachment: fixed;
     color: var(--color-foreground);
     font-family: var(--font-display);
+    -webkit-font-smoothing: antialiased;
   }
 }
 
-/* Light theme override */
-html.light {
-  --background: oklch(0.985 0.005 220);
-  --foreground: oklch(0.18 0.02 240);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.02 240);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.02 240);
-  --primary: oklch(0.55 0.18 230);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.95 0.01 230);
-  --secondary-foreground: oklch(0.20 0.02 240);
-  --muted: oklch(0.94 0.01 230);
-  --muted-foreground: oklch(0.45 0.02 240);
-  --accent: oklch(0.92 0.02 230);
-  --accent-foreground: oklch(0.20 0.02 240);
-  --border: oklch(0.20 0.02 240 / 0.12);
-  --input: oklch(0.95 0.01 230);
-  --ring: oklch(0.55 0.18 230);
-  --fuse-cyan: oklch(0.55 0.18 220);
-  --fuse-violet: oklch(0.55 0.20 280);
-  --gradient-bg:
-    radial-gradient(ellipse at top, oklch(0.95 0.04 220) 0%, oklch(0.985 0.005 220) 70%),
-    oklch(0.985 0.005 220);
-  --shadow-glow: 0 0 50px -8px oklch(0.55 0.18 220 / 0.35);
-  --shadow-soft: 0 10px 30px -12px oklch(0 0 0 / 0.15);
+@utility bg-ascend-gradient { background-image: var(--gradient-ascend); }
+@utility bg-sapphire-gradient { background-image: var(--gradient-sapphire); }
+@utility bg-berry-gradient { background-image: var(--gradient-berry); }
+/* legacy alias used across the codebase — maps to the new Ascend gradient */
+@utility bg-fuse-gradient { background-image: var(--gradient-ascend); }
+@utility text-ascend-gradient {
+  background-image: var(--gradient-ascend);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
-
-@layer utilities {
-  .bg-fuse-gradient { background-image: var(--gradient-fuse); }
-  .text-fuse-gradient {
-    background-image: var(--gradient-fuse);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .shadow-glow { box-shadow: var(--shadow-glow); }
-  .shadow-soft { box-shadow: var(--shadow-soft); }
-  .glass {
-    background-color: color-mix(in oklab, var(--card) 70%, transparent);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid color-mix(in oklab, var(--foreground) 8%, transparent);
-  }
-  .brand-fusion {
-    color: var(--foreground);
-    font-weight: 300;
-    letter-spacing: 0.02em;
-  }
-  .brand-synergy {
-    color: var(--foreground);
-    font-weight: 600;
-    text-shadow:
-      0 0 8px color-mix(in oklab, var(--foreground) 50%, transparent),
-      0 0 18px color-mix(in oklab, var(--fuse-cyan) 35%, transparent);
-  }
+@utility text-fuse-gradient {
+  background-image: var(--gradient-ascend);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@utility shadow-glow { box-shadow: var(--shadow-glow); }
+@utility shadow-berry { box-shadow: var(--shadow-berry); }
+@utility shadow-elegant { box-shadow: var(--shadow-elegant); }
+@utility shadow-soft { box-shadow: var(--shadow-soft); }
+@utility glass {
+  background-color: color-mix(in oklab, var(--card) 75%, transparent);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+@utility brand-fusion {
+  color: var(--foreground);
+  font-weight: 300;
+  letter-spacing: 0.02em;
+}
+@utility brand-synergy {
+  color: var(--foreground);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+@utility ascend-rise {
+  animation: ascend-rise 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@utility ascend-glow-pulse {
+  animation: ascend-glow 3.2s ease-in-out infinite;
 }

@@ -18,13 +18,13 @@ import { useState } from "react";
 export const Route = createFileRoute("/more")({
   head: () => ({
     meta: [
-      { title: "More — FusionSynergy" },
+      { title: "More — Ascend" },
       { name: "description", content: "Profile, FUSE AI, Discover, Orders, Leaderboard, Learn, Help, and Settings — all in one place." },
-      { property: "og:title", content: "More — FusionSynergy" },
-      { property: "og:description", content: "All your FusionSynergy tools in one menu." },
-      { property: "og:url", content: "https://fuse-brokerage.lovable.app/more" },
+      { property: "og:title", content: "More — Ascend" },
+      { property: "og:description", content: "All your Ascend tools in one menu." },
+      { property: "og:url", content: "https://ascend-invests.lovable.app/more" },
     ],
-    links: [{ rel: "canonical", href: "https://fuse-brokerage.lovable.app/more" }],
+    links: [{ rel: "canonical", href: "https://ascend-invests.lovable.app/more" }],
   }),
   component: MorePage,
 });
@@ -49,10 +49,10 @@ function MorePage() {
   const follows = useFollows();
 
   const shareUrl =
-    typeof window !== "undefined" ? window.location.origin : "https://fuse-brokerage.lovable.app";
+    typeof window !== "undefined" ? window.location.origin : "https://ascend-invests.lovable.app";
   const shareTitle = profile.username
-    ? `Check out @${profile.username} on FusionSynergy`
-    : "Check out FusionSynergy";
+    ? `Check out @${profile.username} on Ascend`
+    : "Check out Ascend";
 
   const openShare = async () => {
     // Prefer native share sheet on mobile; fall back to in-app dialog.

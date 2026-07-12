@@ -1,86 +1,125 @@
-# Turns 2 + 3 — Invest redesign, Stock detail, Orders, Watchlist
+# Ascend Platform V2 — Refinement & Identity Upgrade
 
-Picking up from Turn 1 (Supabase persistence + live data layer + Home cleanup already shipped). All four of your API keys (FMP, Finnhub, Twelve Data, Massive) are stored server-side and will be used with automatic fallback.
+## 1. Brand & Design System (foundation for everything else)
+
+**Rename FusionSynergy → Ascend** everywhere in-product (headers, titles, meta, onboarding, auth, chat, empty states). Keep "FusionSynergy" only in About, Legal, Footer, Company sections as parent-company reference.
+
+**Rewrite `src/styles.css` design tokens:**
+- Dark: bg `#040406` (Midnight), primary `#0F52BA` (Sapphire), accent `#990F4B` (Berry)
+- Light: bg `#EDF4F5` (Ice White), same Sapphire + Berry
+- Kill the current teal/purple `--fuse-gradient`; replace with a Sapphire→Berry gradient used sparingly (CTA, logo mark, AI accents only)
+- Refine card surfaces, border, muted, ring tokens for both modes so light mode gets proper depth (layered surfaces, softer shadows, not flat)
+- Typography scale + spacing tokens standardized
+
+**Global sweep:** every component using hardcoded emerald/rose/indigo/purple utilities gets swapped to semantic tokens. Buy = Sapphire, Sell = Berry, gains = emerald token, losses = rose token (kept for readability).
+
+## 2. Ascend Logo & FUSE AI Mark
+
+- Use uploaded Ascend "A" logo in `src/components/Logo.tsx` (via lovable-assets pointer from `/mnt/user-uploads/photo_2026-07-08_23.32.56.jpeg`)
+- Generate a distinct FUSE AI mark (minimal geometric spark/node icon, Berry accent) — used in FuseChat, AI insight cards, nav. Clearly a *sub-brand* of Ascend, not a company logo.
+
+## 3. Public Landing Page (new `/` route, unauthenticated)
+
+Restructure routing: unauthenticated users hit landing at `/`, authenticated users are redirected to `/home` (rename current `index.tsx` → `home.tsx`, move `AuthGate` off the root and into an `_app` layout).
+
+Landing sections (eToro-inspired, Ascend palette):
+1. **Nav** — logo, Markets / Learn / Company dropdowns, Sign in, "Start Investing" CTA
+2. **Hero** — "Invest Smarter. Learn Faster. Compete Better." + phone mockup with animated dashboard preview
+3. **Feature grid** — AI Assistant, Simulator, Community, Leaderboards, Research, Watchlists
+4. **Platform preview** — desktop + mobile screenshots
+5. **Why Ascend** — 4 value props
+6. **Animated stats counters** — Active Investors / Trades / Market Coverage
+7. **Final CTA** + footer (FusionSynergy parent-company reference lives here)
+
+**Motion system** (Framer Motion, already available via Motion for React patterns):
+- Hero staggered fade+slide (600–1200ms total)
+- Subtle animated bg: low-opacity flowing lines / particles (canvas, respects `prefers-reduced-motion`, disabled on mobile)
+- Scroll-reveal for feature cards, hover lift on buttons/cards
+- Phone mockup loop: watchlist tick, chart pulse, market-status flip, AI card appear
+- Counters animate once on viewport enter
+
+Light + dark parity throughout.
+
+## 4. Market Status System
+
+New `src/components/MarketStatus.tsx` — global pill showing Open / Pre / After / Closed / Holiday with countdown to next transition. Mounted in AppShell header and on stock pages. Uses existing `marketState` helper; extend for holiday calendar (US market holidays hardcoded list).
+
+## 5. Stock Page Expansion
+
+Extend `src/routes/stock.$symbol.tsx` and `market.functions.ts`:
+- Sessions: Regular / Pre-Market / After-Hours sub-cards with own price+change (FMP `/stable/quote` + `/stable/quote-short` extended-hours fields)
+- Stats grid: Market Cap, P/E, 52W range, Sector, Industry, Volume, Avg Volume, Dividend, Beta
+- **Recent News** — FMP `/stable/news/stock`
+- **Analyst Ratings** — FMP `/stable/ratings-snapshot`
+- **FUSE AI Summary card** — Berry-accented, calls Lovable AI Gateway with symbol + key stats, returns 2-sentence take
+- **Related Stocks** — same-sector peers
+- **Buy/Sell dock** — sticky, opens Trade modal (already exists — polish confirmation w/ estimated cost, portfolio impact %, remaining cash, position size after)
+
+## 6. Fix All Dead Interactions
+
+Audit pass — every button either acts or shows a "Coming Soon" toast:
+- Invest tab "View all" links → verify routes exist and load
+- Theme tiles → clickable → theme detail page (see §7)
+- Home tab quick actions
+- Settings placeholder rows
+- Discover / Discussion / Leaderboard nav
+- More menu
+
+## 7. Theme Detail Pages
+
+Complete `invest.theme.$themeId.tsx`:
+- Header w/ gradient + description
+- Constituent stocks grid w/ live quotes
+- Top performers / worst performers (today)
+- Theme news (FMP news filtered by constituents)
+- FUSE AI commentary (Lovable AI, one-shot summary of theme momentum)
+- Theme aggregate perf chart (equal-weight)
+
+## 8. Portfolio Health
+
+New section on `/portfolio`:
+- Diversification score (Herfindahl index across positions)
+- Sector exposure bars (color-coded)
+- Cash allocation %
+- Concentration warning (any single position >25%)
+- Risk score (weighted beta)
+- Overall Health score (0–100) w/ ring visual
+
+## 9. Empty States
+
+Rewrite every empty state with title + guidance + primary CTA:
+- Watchlist, Positions, Orders, Community, Discussion, Notifications
+
+## 10. Home Tab Cleanup
+
+- Remove "Practice Cash" pill (gamification already handles it)
+- Wire Ticker Tape to live Finnhub WebSocket for real-time mini-chart movement (fallback to 15s polling)
+- Recent Orders section reads from Supabase `orders` table
+- Market Movers row + Market Status pill in header
+
+## 11. Light Mode Polish
+
+Pass over every route in light mode:
+- Layered surface tokens (bg / card / elevated card)
+- Softer shadows using Sapphire-tinted color-mix
+- Increased text contrast
+- Verify charts, heatmap, badges legible
+
+## 12. Consistency Sweep
+
+Final pass — visit every route, confirm: Ascend logo/wordmark, unified card style, unified button style, Sapphire primary, Berry AI accents, no lingering FusionSynergy strings, no purple/teal remnants.
 
 ---
 
-## Turn 2 — Invest tab redesign + full symbol catalog
+## Technical Notes
 
-### New server functions (`src/lib/market.functions.ts`)
-- `getSymbolIndex()` — fetches FMP `/stock/list` once, caches in module-level Map keyed by symbol + lowercased name. Refreshed every 24h. Powers search across 30k+ tickers.
-- `searchSymbols(q)` — substring match against the index, ranks exact-symbol > symbol-prefix > name-prefix > name-substring. Returns top 25.
-- `getTopMovers({ kind: "gainers"|"losers"|"actives" })` — FMP `/stock_market/{gainers|losers|actives}`, cached 60s, falls back to Finnhub.
-- `getLargestByCap(limit)` — FMP `/stock-screener?marketCapMoreThan=...&limit=...`, cached 10m.
-- `getSectorHeatmap()` — FMP `/sectors-performance` (today + week), normalized to `{sector, change, tone}` where tone = up/down/neutral (±0.1%).
-- `getThemeQuotes(themeId)` — pulls quotes for the curated symbol list of one theme.
+- **New route structure:** `src/routes/index.tsx` (landing), `src/routes/_app.tsx` (AuthGate layout), `src/routes/_app/home.tsx`, `_app/invest.tsx`, etc. Redirect `/` → `/home` when session exists.
+- **Motion lib:** add `motion` (Framer Motion successor) via `bun add motion`.
+- **New server fns in `market.functions.ts`:** `getStockNews`, `getAnalystRatings`, `getExtendedHoursQuote`, `getPeers`, `getFuseInsight` (Lovable AI).
+- **Market holidays:** static US calendar constant in `src/lib/market-hours.ts`.
+- **Logo asset:** register `photo_2026-07-08_23.32.56.jpeg` via lovable-assets, import as JSON pointer.
+- **AI Gateway:** use existing Lovable AI connector for FUSE insights (no new secret).
+- **APIs already keyed:** FMP `/stable`, Finnhub. No new keys required for this scope.
 
-### New routes
-- `src/routes/invest.tsx` — **rebuilt** as a sectioned scroll page:
-  1. Search bar (iOS-style, full-width, dark pill). Empty state = sections below. Typing = full-screen results overlay matching your screenshot (logo + symbol + name rows from `searchSymbols`).
-  2. *Largest by Market Cap* — horizontal scroll of 6 tiles + "View all" → `/invest/largest-cap`.
-  3. *Top Winners* + *Top Losers* + *Top Traded* — three stacked sections, 3 rows each + "View all" → `/invest/movers/gainers`, `/movers/losers`, `/movers/actives`.
-  4. *Market Heat Map* — sector tile grid (green/red/grey by % change). Tap a sector → filtered stock list.
-  5. *Themes* — horizontal row of 6 theme cards + "View all" → `/invest/themes`.
-- `src/routes/invest.largest-cap.tsx` — top 20 by market cap, refreshes daily.
-- `src/routes/invest.movers.$kind.tsx` — dynamic for gainers/losers/actives.
-- `src/routes/invest.themes.tsx` — grid of all 12 themes.
-- `src/routes/invest.theme.$themeId.tsx` — hero image + theme description + full company list with live quotes.
-
-### Themes data (`src/lib/themes.ts` — extend existing)
-12 themes you listed, each with `{ id, name, blurb, heroImage, symbols[] }`. Symbol lists curated per theme (20–60 each). Hero images generated once via imagegen.
-
-### Search overlay component
-`src/components/SearchOverlay.tsx` — full-screen modal triggered from the Invest search bar. Matches your reference screenshot exactly: dark pill search input at top, "Done" button, scrollable list of `{logo, symbol, badge, name}` rows. Each row links to `/stock/$symbol`.
-
----
-
-## Turn 3 — Stock detail + Orders + Watchlist
-
-### Stock detail redesign (`src/routes/stock.$symbol.tsx`)
-Rebuilt top-to-bottom:
-1. **Header** — logo, name, big price, **PRE MARKET / AFTER HOURS** badge (from FMP `/v4/pre-post-market/{symbol}`), $ change + % change with arrow.
-2. **Interactive chart** — replaced static SVG with `InteractiveChart` enhanced for crosshair + volume bars under the line. Drag finger/mouse to see price-at-time tooltip. Line color: emerald (up) / rose (down) / slate (±0.05%).
-3. **Range buttons** (1D · 1W · 1M · 3M · 6M · 1Y · 10Y · YTD · ALL) — each computes its own $ + % change vs first candle in range and shows it next to the active range.
-4. **Equity Position card** — current value, shares, daily change, total change, avg entry, **portfolio weight** (position value ÷ total portfolio value). N/A if no position.
-5. **Stats grid** — prev close, open, close, avg volume, P/E, market cap, today's range, 52W range, plus 1W/1M/3M/6M/YTD/1Y % cards (computed from candles).
-6. **About** — CEO, sector, industry, market cap, 52W H/L, beta, full description (FMP `/profile`).
-7. **Heart icon** in header — toggles watchlist via new `toggleWatchlist` server fn.
-8. **Bottom dock** — sticky bar with "Buying Power: $X,XXX" + full-width Trade button (opens existing buy/sell modal, modal shows available cash).
-
-New server fn `getCompanyProfile(symbol)` → FMP `/profile/{symbol}` for About section.
-Extended `getCompanyStats` → adds 52W H/L, beta, 1W/1M/3M/6M/YTD/1Y % changes.
-
-### Orders page (`src/routes/orders.tsx`)
-- Reads from `orders` table via new `getMyOrders` server fn (`requireSupabaseAuth`).
-- Lists every BUY/SELL with date, symbol logo, side badge, qty, price, total.
-- Empty state with link to Invest.
-
-### Watchlist page (`src/routes/watchlist.tsx` — new)
-- Reads `watchlist` table via `getMyWatchlist` server fn, joins with live `getQuotes` for prices.
-- Each row: logo, symbol, name, live price, % change, swipe/long-press to remove.
-- Linked from Portfolio tab and from heart toggle on Stock page.
-
-### Profile/auth wiring (closes the "I keep redoing onboarding" bug)
-- `getMyProfile` / `updateMyProfile` server fns (Supabase via `requireSupabaseAuth`).
-- `useProfile()` becomes a TanStack Query subscription to `getMyProfile`.
-- All mutations (`placeBuy`, `placeSell`, `toggleWatchlist`, `setDifficulty`, `restartAccount`) become server fns that write to Supabase AND invalidate the profile query.
-- `AuthGate`: signed in + `difficulty` set → `/`; signed in + no difficulty → `/onboarding/difficulty`; signed out → `/login`.
-
----
-
-## Technical notes
-
-- Catalog cache: in-memory Map on the server worker; warm on first request, refresh after 24h. No DB write needed — FMP `/stock/list` is the source of truth.
-- All `getQuotes` calls already fan out FMP → Finnhub → Twelve Data → Massive (Turn 1).
-- Pre/post-market quote merges into the same `Quote` shape with an extra `marketState: "REGULAR"|"PRE"|"POST"|"CLOSED"` field.
-- Charts use FMP `/historical-chart/{interval}/{symbol}` for intraday and `/historical-price-full/{symbol}` for daily+; intervals chosen per range.
-- Heart icon optimistic update via TanStack Query mutation.
-
----
-
-## API keys — do I need anything else?
-The four you gave (FMP, Finnhub, Twelve Data, Massive) cover everything in Turns 2 + 3. No new keys needed. **Heads up: please rotate the Massive + Twelve Data keys you pasted in chat yesterday — they're now stored in the server env, but treat the chat-pasted versions as compromised.**
-
----
-
-Reply **"go"** when you want me to execute. I'll ship Turn 2 first (smaller blast radius), then Turn 3 in the next message so each one stays a clean reviewable diff.
+## Out of scope for this turn
+Social copy-trading, options, crypto onboarding, mobile native app, education center — design tokens will make them drop-in later.

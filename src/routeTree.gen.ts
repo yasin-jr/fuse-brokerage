@@ -20,6 +20,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LearnRouteImport } from './routes/learn'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as InvestRouteImport } from './routes/invest'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as DiscussionRouteImport } from './routes/discussion'
 import { Route as DiscoverRouteImport } from './routes/discover'
@@ -87,6 +88,11 @@ const InvestRoute = InvestRouteImport.update({
   path: '/invest',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HelpRoute = HelpRouteImport.update({
   id: '/help',
   path: '/help',
@@ -149,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/discover': typeof DiscoverRoute
   '/discussion': typeof DiscussionRoute
   '/help': typeof HelpRoute
+  '/home': typeof HomeRoute
   '/invest': typeof InvestRouteWithChildren
   '/leaderboard': typeof LeaderboardRoute
   '/learn': typeof LearnRoute
@@ -173,6 +180,7 @@ export interface FileRoutesByTo {
   '/discover': typeof DiscoverRoute
   '/discussion': typeof DiscussionRoute
   '/help': typeof HelpRoute
+  '/home': typeof HomeRoute
   '/invest': typeof InvestRouteWithChildren
   '/leaderboard': typeof LeaderboardRoute
   '/learn': typeof LearnRoute
@@ -198,6 +206,7 @@ export interface FileRoutesById {
   '/discover': typeof DiscoverRoute
   '/discussion': typeof DiscussionRoute
   '/help': typeof HelpRoute
+  '/home': typeof HomeRoute
   '/invest': typeof InvestRouteWithChildren
   '/leaderboard': typeof LeaderboardRoute
   '/learn': typeof LearnRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/discussion'
     | '/help'
+    | '/home'
     | '/invest'
     | '/leaderboard'
     | '/learn'
@@ -248,6 +258,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/discussion'
     | '/help'
+    | '/home'
     | '/invest'
     | '/leaderboard'
     | '/learn'
@@ -272,6 +283,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/discussion'
     | '/help'
+    | '/home'
     | '/invest'
     | '/leaderboard'
     | '/learn'
@@ -297,6 +309,7 @@ export interface RootRouteChildren {
   DiscoverRoute: typeof DiscoverRoute
   DiscussionRoute: typeof DiscussionRoute
   HelpRoute: typeof HelpRoute
+  HomeRoute: typeof HomeRoute
   InvestRoute: typeof InvestRouteWithChildren
   LeaderboardRoute: typeof LeaderboardRoute
   LearnRoute: typeof LearnRoute
@@ -389,6 +402,13 @@ declare module '@tanstack/react-router' {
       path: '/invest'
       fullPath: '/invest'
       preLoaderRoute: typeof InvestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/help': {
@@ -494,6 +514,7 @@ const rootRouteChildren: RootRouteChildren = {
   DiscoverRoute: DiscoverRoute,
   DiscussionRoute: DiscussionRoute,
   HelpRoute: HelpRoute,
+  HomeRoute: HomeRoute,
   InvestRoute: InvestRouteWithChildren,
   LeaderboardRoute: LeaderboardRoute,
   LearnRoute: LearnRoute,
@@ -511,13 +532,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
