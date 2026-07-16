@@ -143,6 +143,17 @@ export const listComments = createServerFn({ method: "GET" })
   .inputValidator((d) => ListCommentsInput.parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Verify the post is public before returning comments; comments on
+    // private/followers-only posts must not be readable by arbitrary callers.
+    const { data: post, error: postErr } = await supabaseAdmin
+      .from("posts")
+      .select("visibility")
+      .eq("id", data.post_id)
+      .maybeSingle();
+    if (postErr) throw new Error(postErr.message);
+    if (!post || post.visibility !== "public") {
+      throw new Response("Not found", { status: 404 });
+    }
     const { data: rows, error } = await supabaseAdmin
       .from("post_comments")
       .select("id, post_id, user_id, username, body, created_at")
