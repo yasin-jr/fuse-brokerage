@@ -93,7 +93,7 @@ async function fetchOne(symbol: string): Promise<Quote | null> {
 }
 
 const QuotesInputSchema = z.object({
-  symbols: z.array(z.string().min(1).max(20)).min(1).max(100),
+  symbols: z.array(z.string().min(1).max(20)).min(1).max(30),
 });
 
 export const getQuotes = createServerFn({ method: "GET" })
@@ -349,7 +349,7 @@ export const getCandles = createServerFn({ method: "GET" })
 export type PortfolioPoint = { t: number; v: number };
 
 const PortfolioHistoryInput = z.object({
-  positions: z.array(z.object({ symbol: z.string().min(1).max(20), shares: z.number() })).max(50),
+  positions: z.array(z.object({ symbol: z.string().min(1).max(20), shares: z.number() })).max(20),
   cash: z.number().min(0),
   range: z.enum(["1D", "1W", "1M", "3M", "6M", "1Y", "10Y", "YTD", "ALL"]),
 });
