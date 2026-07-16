@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.assert_username_matches_profile() FROM PUBLIC, anon, authenticated;
